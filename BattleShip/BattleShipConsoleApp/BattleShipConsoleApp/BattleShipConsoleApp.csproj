@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\BattleShipBrain\BattleShipBrain.csproj" />
+      <ProjectReference Include="..\BattleShipConsoleUI\BattleShipConsoleUI.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Configs" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Content Include="bin\Debug\net5.0\Configs\standard.json" />
+    </ItemGroup>
+
+</Project>
