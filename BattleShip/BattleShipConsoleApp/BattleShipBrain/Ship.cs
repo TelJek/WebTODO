@@ -5,30 +5,44 @@ namespace BattleShipBrain
 {
     public class Ship
     {
-        public string Name { get; private set; } 
+        public string Name { get;  set; } 
         
-        private readonly List<Coordinate> _coordinates = new List<Coordinate>();
+        public  List<Coordinate> Coordinates { get;  set; }  = new List<Coordinate>();
+
+        public int Length { get;  set; } 
+        
+        public Coordinate Position { get;  set; } 
+        
+        public int Height { get;  set; } 
 
         public Ship(string name, Coordinate position, int length, int height)
         {
             Name = name;
-            for (var x = 0; x < position.X + length; x++)
+            Position = position;
+            Length = length;
+            Height = height;
+            for (var x = 0; x < Length; x++)
             {
-                for (var y = 0; y < position.Y + height; y++)
+                for (var y = 0; y < Height; y++)
                 {
-                    _coordinates.Add(new Coordinate(){X = x, Y = y});
+                    Coordinates.Add(new Coordinate(){X = position.X + x, Y = position.Y + y});
                 }
             }
         }
 
-        public int GetShipSize() => _coordinates.Count;
+        public List<Coordinate> GetCords()
+        {
+            return Coordinates;
+        }
+        
+        public int GetShipSize() => Coordinates.Count;
         
         public int GetShipDamageCount(BoardSquareState[,] board) =>
             // count all the items that match the predicate
-            _coordinates.Count(coordinate => board[coordinate.X, coordinate.Y].IsBomb);
+            Coordinates.Count(coordinate => board[coordinate.X, coordinate.Y].IsBomb);
 
         public bool IsShipSunk(BoardSquareState[,] board) =>
             // returns true when all the items in the list match predicate
-            _coordinates.All(coordinate => board[coordinate.X, coordinate.Y].IsBomb);
+            Coordinates.All(coordinate => board[coordinate.X, coordinate.Y].IsBomb);
     }
 }
