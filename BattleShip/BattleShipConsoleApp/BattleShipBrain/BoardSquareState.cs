@@ -2,6 +2,7 @@ namespace BattleShipBrain
 {
     public struct BoardSquareState
     {
+        public int BoardSquareStateId { get; set; }
         public bool IsShip { get; set; }
         public bool IsBomb { get; set; }
 

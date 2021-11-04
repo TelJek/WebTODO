@@ -10,7 +10,7 @@ namespace BattleShipBrain
     {
         private int _currentPlayerNo = 0;
         private GameBoard[] GameBoards = new GameBoard[4];
-        private GameConfig _gameConfig = new GameConfig();
+        private GameConfig _gameConfig;
         private static string _basePath = "";
 
         private readonly Random _rnd = new Random();
@@ -25,7 +25,6 @@ namespace BattleShipBrain
             GameBoards[3] = new GameBoard("mines");
 
             GameBoards[0].Board = new BoardSquareState[config.BoardSizeX, config.BoardSizeY];
-            
             GameBoards[1].Board = new BoardSquareState[config.BoardSizeX, config.BoardSizeY];
             GameBoards[2].Board = new BoardSquareState[config.BoardSizeX, config.BoardSizeY];
             GameBoards[3].Board = new BoardSquareState[config.BoardSizeX, config.BoardSizeY];
@@ -150,7 +149,7 @@ namespace BattleShipBrain
             }
         }
 
-        private static string GetConfJsonStr(GameConfig config)
+        public string GetConfJsonStr(GameConfig config)
         {
             var jsonOptions = new JsonSerializerOptions()
             {
@@ -219,13 +218,13 @@ namespace BattleShipBrain
         
         public SaveGameDTO RestoreBrainFromJson(string saveName)
         {
-             var fileNameStandardConfig = GetFileNameSave(saveName);
+            var fileNameStandardConfig = GetFileNameSave(saveName);
             SaveGameDTO saveGameDto = new SaveGameDTO();
             if (System.IO.File.Exists(fileNameStandardConfig))
             {
                 Console.WriteLine("Loading config...");
-                var confText = System.IO.File.ReadAllText(fileNameStandardConfig);
-                saveGameDto = JsonSerializer.Deserialize<SaveGameDTO>(confText) ?? throw new InvalidOperationException();
+                var saveText = System.IO.File.ReadAllText(fileNameStandardConfig);
+                saveGameDto = JsonSerializer.Deserialize<SaveGameDTO>(saveText) ?? throw new InvalidOperationException();
             }
 
             return saveGameDto;

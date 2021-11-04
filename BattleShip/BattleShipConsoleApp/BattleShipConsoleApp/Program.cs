@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using BattleShipBrain;
 using BattleShipConsoleUI;
+using DAL;
 
 namespace BattleShipConsoleApp
 {
@@ -26,18 +28,30 @@ namespace BattleShipConsoleApp
             var inputInMethod = "";
             Console.Clear();
             Console.WriteLine(_basePath + System.IO.Path.DirectorySeparatorChar + "Configs");
-            Console.WriteLine("=========| Load Configuration |=========");
+            Console.WriteLine("=========| Load Configuration |=========\n");
             Console.WriteLine("Available: \n");
+            Console.WriteLine("=========| Load Local Configuration |=========");
+            Console.WriteLine();
             foreach (FileInfo file in files)
             {
                 Console.WriteLine(file.Name.Split(".")[0]);
             }
             Console.WriteLine();
+            Console.WriteLine("=========| Load DB Configuration |=========");
+            Console.WriteLine();
+            using var db = new ApplicationDbContext();
+            foreach (var dbConfig in db.GameConfigSaves)
+            {
+                Console.WriteLine(dbConfig.ConfigName);
+            }
+            Console.WriteLine();
             Console.WriteLine("=============================================");
+            Console.Write("Db or Local: ");
+            var confType = Console.ReadLine()?.Trim();
             Console.Write("Your choice(R to Load Default): ");
             inputInMethod = Console.ReadLine()?.Trim();
             
-            StartProgram(inputInMethod);
+            StartProgram(inputInMethod, confType);
         }
 
         public static string GetFileNameConfig(string configName)
@@ -72,23 +86,35 @@ namespace BattleShipConsoleApp
             }
         }
 
-        public static GameConfig LoadNewConfig(string configName)
+        public static GameConfig LoadNewConfig(string configName, string loadFrom)
         {
-            var fileNameStandardConfig = GetFileNameConfig(configName);
             GameConfig config = new GameConfig();
-            if (System.IO.File.Exists(fileNameStandardConfig))
+            var fileNameStandardConfig = GetFileNameConfig(configName);
+            if (loadFrom == "Local")
             {
-                Console.WriteLine("Loading config...");
-                var confText = System.IO.File.ReadAllText(fileNameStandardConfig);
-                config = JsonSerializer.Deserialize<GameConfig>(confText) ?? throw new InvalidOperationException();
+                if (System.IO.File.Exists(fileNameStandardConfig))
+                {
+                    Console.WriteLine("Loading config...");
+                    var confText = System.IO.File.ReadAllText(fileNameStandardConfig);
+                    config = JsonSerializer.Deserialize<GameConfig>(confText) ?? throw new InvalidOperationException();
+                }
             }
-
+            if (loadFrom == "Db")
+            {
+                using var db = new ApplicationDbContext();
+                var confText = db.GameConfigSaves.FirstOrDefault(c => c.ConfigName == configName);;
+                if (confText != null)
+                {
+                    config = JsonSerializer.Deserialize<GameConfig>(confText.GameConfigJsnString) ?? throw new InvalidOperationException();
+                }
+            }
+            
             return config;
         }
         
-        static void StartProgram(string config)
-        { 
-            BSBrain brain = new BSBrain(LoadNewConfig(config), _basePath); 
+        static void StartProgram(string config, string type)
+        {
+            BSBrain brain = new BSBrain(LoadNewConfig(config, type), _basePath); 
             BsConsoleUi console = new BsConsoleUi(brain);
             console.DrawUi("main");
         }

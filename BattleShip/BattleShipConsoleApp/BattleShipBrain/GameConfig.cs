@@ -5,6 +5,7 @@ namespace BattleShipBrain
 {
     public class GameConfig
     {
+        public int GameConfigId { get; set; }
         public int BoardSizeX { get; set; } = 10;
         public int BoardSizeY { get; set; } = 10;
 

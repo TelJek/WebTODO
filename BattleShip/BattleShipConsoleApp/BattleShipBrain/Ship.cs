@@ -5,13 +5,14 @@ namespace BattleShipBrain
 {
     public class Ship
     {
+        public int ShipId { get; set; }
         public string Name { get;  set; } 
         
         public  List<Coordinate> Coordinates { get;  set; }  = new List<Coordinate>();
 
-        public int Length { get;  set; } 
-        
-        public Coordinate Position { get;  set; } 
+        public int Length { get;  set; }
+
+        public Coordinate Position { get; set; }
         
         public int Height { get;  set; } 
 
