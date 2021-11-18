@@ -26,6 +26,7 @@ namespace BattleShipConsoleApp
             string str = "";
             
             var inputInMethod = "";
+            var confType = "";
             Console.Clear();
             Console.WriteLine(_basePath + System.IO.Path.DirectorySeparatorChar + "Configs");
             Console.WriteLine("=========| Load Configuration |=========\n");
@@ -46,11 +47,14 @@ namespace BattleShipConsoleApp
             }
             Console.WriteLine();
             Console.WriteLine("=============================================");
-            Console.Write("Db or Local: ");
-            var confType = Console.ReadLine()?.Trim();
-            Console.Write("Your choice(R to Load Default): ");
-            inputInMethod = Console.ReadLine()?.Trim();
-            
+            while (confType == "" || inputInMethod == "")
+            {
+                Console.Write("Db or Local: ");
+                confType = Console.ReadLine()?.Trim().ToUpper();
+                Console.Write("Your choice(R to Load Default): ");
+                inputInMethod = Console.ReadLine()?.Trim();
+                Console.WriteLine();
+            }
             StartProgram(inputInMethod, confType);
         }
 
@@ -90,7 +94,7 @@ namespace BattleShipConsoleApp
         {
             GameConfig config = new GameConfig();
             var fileNameStandardConfig = GetFileNameConfig(configName);
-            if (loadFrom == "Local")
+            if (loadFrom == "LOCAL")
             {
                 if (System.IO.File.Exists(fileNameStandardConfig))
                 {
@@ -99,7 +103,7 @@ namespace BattleShipConsoleApp
                     config = JsonSerializer.Deserialize<GameConfig>(confText) ?? throw new InvalidOperationException();
                 }
             }
-            if (loadFrom == "Db")
+            if (loadFrom == "DB")
             {
                 using var db = new ApplicationDbContext();
                 var confText = db.GameConfigSaves.FirstOrDefault(c => c.ConfigName == configName);;
@@ -115,7 +119,7 @@ namespace BattleShipConsoleApp
         static void StartProgram(string config, string type)
         {
             BSBrain brain = new BSBrain(LoadNewConfig(config, type), _basePath); 
-            BsConsoleUi console = new BsConsoleUi(brain);
+            BsConsoleUi console = new BsConsoleUi(brain, config, type);
             console.DrawUi("main");
         }
     }

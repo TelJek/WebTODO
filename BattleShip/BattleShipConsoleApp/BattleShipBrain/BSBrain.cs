@@ -12,6 +12,7 @@ namespace BattleShipBrain
         private GameBoard[] GameBoards = new GameBoard[4];
         private GameConfig _gameConfig;
         private static string _basePath = "";
+        
 
         private readonly Random _rnd = new Random();
 
@@ -35,6 +36,11 @@ namespace BattleShipBrain
             return _basePath;
         }
         
+        public EShipTouchRule GetTouchRule()
+        {
+            return _gameConfig.EShipTouchRule;
+        }
+        
         public GameConfig GetGameConfig()
         {
             return _gameConfig;
@@ -45,9 +51,16 @@ namespace BattleShipBrain
             return _currentPlayerNo;
         }
         
-        public void ChangePlayerNum(int nextPlayer)
+        public void ChangePlayerNum()
         {
-            _currentPlayerNo = nextPlayer;
+            if (_currentPlayerNo == 0)
+            {
+                _currentPlayerNo++;
+            }
+            else
+            {
+                _currentPlayerNo--;  
+            }
         }
         
         public GameConfig CreateNewConfig(int newBoardSizeX, int newBoardSizeY, EShipTouchRule newTouchRule,
@@ -103,6 +116,8 @@ namespace BattleShipBrain
 
         public void PutBomb(int x, int y, int player)
         {
+            // 0 to put a bomb on Player A board
+            // 1 to put a bomb on Player B board
             switch (player)
             {
                 case 0:
@@ -116,17 +131,22 @@ namespace BattleShipBrain
             }
         }
 
+        public void CheckIfCanPutShip(int x, int y, int player)
+        {
+            
+        }
+
         public void PutShip(int player, Ship ship)
         {
             switch (player)
             {
                 case 0:
-                    List<Ship> ships = new List<Ship>();
+                    List<Ship> shipsA = new List<Ship>();
                     if (GameBoards[0].Ships == null)
                     {
-                        ships = new List<Ship>();
-                        ships.Add(ship);
-                        GameBoards[0].Ships = ships;
+                        shipsA = new List<Ship>();
+                        shipsA.Add(ship);
+                        GameBoards[0].Ships = shipsA;
                         foreach (var coordinate in ship.GetCords()!)
                         {
                             GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
@@ -140,6 +160,18 @@ namespace BattleShipBrain
                     }
                     break;
                 case 1:
+                    List<Ship> shipsB = new List<Ship>();
+                    if (GameBoards[2].Ships == null)
+                    {
+                        shipsB = new List<Ship>();
+                        shipsB.Add(ship);
+                        GameBoards[2].Ships = shipsB;
+                        foreach (var coordinate in ship.GetCords()!)
+                        {
+                            GameBoards[2].Board[coordinate.X, coordinate.Y].IsShip = true;
+                        }
+                        break;
+                    }
                     GameBoards[2].Ships.Add(ship);
                     foreach (var coordinate in ship.GetCords()!)
                     {
