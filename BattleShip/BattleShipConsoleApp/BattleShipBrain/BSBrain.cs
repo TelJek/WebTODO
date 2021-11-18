@@ -12,6 +12,8 @@ namespace BattleShipBrain
         private GameBoard[] GameBoards = new GameBoard[4];
         private GameConfig _gameConfig;
         private static string _basePath = "";
+        private int _playerAShipDone = 0;
+        private int _playerBShipDone = 0;
         
 
         private readonly Random _rnd = new Random();
@@ -31,6 +33,19 @@ namespace BattleShipBrain
             GameBoards[3].Board = new BoardSquareState[config.BoardSizeX, config.BoardSizeY];
         }
 
+        public void PlayerPlacedShips(int playerNum)
+        {
+            if (playerNum == 0) _playerAShipDone = 1;
+            if (playerNum == 1) _playerBShipDone = 1;
+        }
+        
+        public int CheckPlayerPlacedShips(int playerNum)
+        {
+            if (playerNum == 0) return _playerAShipDone;
+            if (playerNum == 1) return _playerBShipDone;
+            return 0;
+        }
+        
         public string GetBasePath()
         {
             return _basePath;

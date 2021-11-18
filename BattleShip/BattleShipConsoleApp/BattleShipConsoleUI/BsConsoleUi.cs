@@ -67,12 +67,12 @@ namespace BattleShipConsoleUI
 
             if (level == "playerABoards")
             {
-                inputInMethod = PlayerBoards(1);
+                inputInMethod = PlayerBoards(0);
             }
 
             if (level == "playerBBoards")
             {
-                inputInMethod = PlayerBoards(2);
+                inputInMethod = PlayerBoards(1);
             }
 
             if (level == "playerAShips")
@@ -262,17 +262,29 @@ namespace BattleShipConsoleUI
 
         public string? PlayerBoards(int playerNum)
         {
-            string playerLetter = "";
-            if (playerNum == 1) {playerLetter = "A";}
-            if (playerNum == 2) {playerLetter = "B";}
             var brain = _brain;
-            Console.WriteLine($"--------- | Player {playerLetter} Boards | --------\n");
-            Console.WriteLine($"=========| Player {playerLetter} Board with Ships|=========");
-            DrawBoard(brain?.GetBoard(playerNum-1));
-            Console.WriteLine($"=========| Player {playerLetter} Board with Mines|=========");
-            DrawBoard(brain.GetBoard(playerNum));
-            Console.WriteLine("=============================================");
-            Console.Write("R to Return: ");
+
+            if (playerNum == 0)
+            {
+                Console.WriteLine($"--------- | Player A Boards | --------\n");
+                Console.WriteLine($"=========| Player A Board with Ships|=========");
+                DrawBoard(brain!.GetBoard(0));
+                Console.WriteLine($"=========| Player A Board with Mines|=========");
+                DrawBoard(brain.GetBoard(1));
+                Console.WriteLine("=============================================");
+                Console.Write("R to Return: ");
+            }
+            if (playerNum == 1)
+            {
+                Console.WriteLine($"--------- | Player B Boards | --------\n");
+                Console.WriteLine($"=========| Player B Board with Ships|=========");
+                DrawBoard(brain!.GetBoard(2));
+                Console.WriteLine($"=========| Player B Board with Mines|=========");
+                DrawBoard(brain.GetBoard(3));
+                Console.WriteLine("=============================================");
+                Console.Write("R to Return: ");
+            }
+            
             var res = Console.ReadLine()?.Trim().ToUpper();
             return res;
         }
@@ -306,6 +318,15 @@ namespace BattleShipConsoleUI
 
             var brain = _brain;
             var gameConfig = brain?.GetGameConfig();
+
+            if (brain!.CheckPlayerPlacedShips(playerNum) == 1 || gameConfig!.ShipConfigs.Count == 0)
+            {
+                Console.WriteLine("\nYou do not have available ships to use!\n");
+                Console.WriteLine("=============================================");
+                Console.Write("R to Return: ");
+                var resError = Console.ReadLine()?.Trim().ToUpper();
+                return resError;
+            }
             
             Console.WriteLine($"=========| Player {playerLetter} Ships |=========");
             DrawBoard(brain?.GetBoard(playerNum)!);
@@ -315,10 +336,11 @@ namespace BattleShipConsoleUI
             {
                 foreach (var ship in gameConfig!.ShipConfigs)
                 {
+                    int shipCounter = ship.Quantity;
                     for (int i = 0; i < ship.Quantity; i++)
                     {
                         Console.WriteLine(
-                            $"Ship selected: Name {ship.Name} Quantity {ship.Quantity} ShipSizeX {ship.ShipSizeX} ShipSizeY {ship.ShipSizeY}");
+                            $"Ship selected: Name {ship.Name} Quantity {shipCounter} ShipSizeX {ship.ShipSizeX} ShipSizeY {ship.ShipSizeY}");
                         Console.Write("Choose Y side number: ");
                         var yShip = int.Parse(Console.ReadLine()?.Trim()!);
                         Console.Write("Choose X side number: ");
@@ -327,15 +349,13 @@ namespace BattleShipConsoleUI
                         cord.X = xShip;
                         cord.Y = yShip;
                         brain?.PutShip(playerNum, new Ship(ship.Name, cord, ship.ShipSizeX, ship.ShipSizeY));
+                        shipCounter--;
                     }
                 }
+                brain!.PlayerPlacedShips(playerNum);
             }
 
-            if (gameConfig!.ShipConfigs.Count == 0)
-            {
-                Console.WriteLine("You do not have available ships to use!");
-            }
-            
+            Console.WriteLine("\nYou have placed all ships!\n");
             Console.WriteLine("=============================================");
             Console.Write("R to Return: ");
             var res = Console.ReadLine()?.Trim().ToUpper();
