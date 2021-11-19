@@ -146,9 +146,40 @@ namespace BattleShipBrain
             }
         }
 
-        public void CheckIfCanPutShip(int x, int y, int player)
+        public bool CheckIfCanPutShip(Ship shipToPut, int player)
         {
-            
+            EShipTouchRule currentTouchRule = GetTouchRule();
+            switch (player)
+            {
+                case 0:
+                    if (currentTouchRule == EShipTouchRule.NoTouch)
+                    {
+                        if (GameBoards[0].Ships is null) return true;
+ 
+                        foreach (var coordinate in shipToPut.GetCords()!)
+                        {
+                            for (int y = -1; y < 2; y++)
+                            {
+                                for (int x = -1; x < 2; x++)
+                                {
+                                    if (GameBoards[0].Board[coordinate.X + x, coordinate.Y + y].IsShip is true)
+                                    {
+                                        return false;
+                                    }
+                                }   
+                            }
+                            // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                        }
+
+                        return true;
+
+                    }
+                    break;
+                case 1:
+                    break;
+            }
+
+            return false;
         }
 
         public void PutShip(int player, Ship ship)
@@ -157,21 +188,28 @@ namespace BattleShipBrain
             {
                 case 0:
                     List<Ship> shipsA = new List<Ship>();
-                    if (GameBoards[0].Ships == null)
+                    if (GameBoards[0].Ships is null)
                     {
-                        shipsA = new List<Ship>();
-                        shipsA.Add(ship);
-                        GameBoards[0].Ships = shipsA;
+                        if (CheckIfCanPutShip(ship, player))
+                        {
+                            shipsA = new List<Ship>();
+                            shipsA.Add(ship);
+                            GameBoards[0].Ships = shipsA;
+                            foreach (var coordinate in ship.GetCords()!)
+                            {
+                                GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                            }
+                            break;
+                        }
+                    }
+
+                    if (CheckIfCanPutShip(ship, player))
+                    {
+                        GameBoards[0].Ships.Add(ship);
                         foreach (var coordinate in ship.GetCords()!)
                         {
                             GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
                         }
-                        break;
-                    }
-                    GameBoards[0].Ships.Add(ship);
-                    foreach (var coordinate in ship.GetCords()!)
-                    {
-                        GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
                     }
                     break;
                 case 1:
