@@ -319,7 +319,7 @@ namespace BattleShipConsoleUI
             var brain = _brain;
             var gameConfig = brain?.GetGameConfig();
 
-            if (brain!.CheckPlayerPlacedShips(playerNum) == 1 || gameConfig!.ShipConfigs.Count == 0)
+            if (brain!.CheckPlayerPlacedShips(playerNum) is true || gameConfig!.ShipConfigs.Count == 0)
             {
                 Console.WriteLine("\nYou do not have available ships to use!\n");
                 Console.WriteLine("=============================================");
@@ -337,7 +337,8 @@ namespace BattleShipConsoleUI
                 foreach (var ship in gameConfig!.ShipConfigs)
                 {
                     int shipCounter = ship.Quantity;
-                    for (int i = 0; i < ship.Quantity; i++)
+                    int i = 0;
+                    while (i < ship.Quantity)
                     {
                         Console.WriteLine(
                             $"Ship selected: Name {ship.Name} Quantity {shipCounter} ShipSizeX {ship.ShipSizeX} ShipSizeY {ship.ShipSizeY}");
@@ -348,8 +349,15 @@ namespace BattleShipConsoleUI
                         var cord = new Coordinate();
                         cord.X = xShip;
                         cord.Y = yShip;
-                        brain?.PutShip(playerNum, new Ship(ship.Name, cord, ship.ShipSizeX, ship.ShipSizeY));
-                        shipCounter--;
+                        if (brain!.PutShip(playerNum, new Ship(ship.Name, cord, ship.ShipSizeX, ship.ShipSizeY)))
+                        {
+                            i++;
+                            shipCounter--;
+                        }
+                        else
+                        {
+                            Console.WriteLine($"\nYou cannot place Ship: {ship.Name} in X: {xShip} and Y: {yShip}!\n");
+                        }
                     }
                 }
                 brain!.PlayerPlacedShips(playerNum);

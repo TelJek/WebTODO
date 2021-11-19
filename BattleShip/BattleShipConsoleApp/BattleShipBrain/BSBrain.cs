@@ -12,9 +12,9 @@ namespace BattleShipBrain
         private GameBoard[] GameBoards = new GameBoard[4];
         private GameConfig _gameConfig;
         private static string _basePath = "";
-        private int _playerAShipDone = 0;
-        private int _playerBShipDone = 0;
-        
+        private bool _playerAShipDone = false;
+        private bool _playerBShipDone = false;
+
 
         private readonly Random _rnd = new Random();
 
@@ -35,27 +35,27 @@ namespace BattleShipBrain
 
         public void PlayerPlacedShips(int playerNum)
         {
-            if (playerNum == 0) _playerAShipDone = 1;
-            if (playerNum == 1) _playerBShipDone = 1;
+            if (playerNum == 0) _playerAShipDone = true;
+            if (playerNum == 1) _playerBShipDone = true;
         }
-        
-        public int CheckPlayerPlacedShips(int playerNum)
+
+        public bool CheckPlayerPlacedShips(int playerNum)
         {
             if (playerNum == 0) return _playerAShipDone;
             if (playerNum == 1) return _playerBShipDone;
-            return 0;
+            return false;
         }
-        
+
         public string GetBasePath()
         {
             return _basePath;
         }
-        
+
         public EShipTouchRule GetTouchRule()
         {
             return _gameConfig.EShipTouchRule;
         }
-        
+
         public GameConfig GetGameConfig()
         {
             return _gameConfig;
@@ -65,7 +65,7 @@ namespace BattleShipBrain
         {
             return _currentPlayerNo;
         }
-        
+
         public void ChangePlayerNum()
         {
             if (_currentPlayerNo == 0)
@@ -74,13 +74,13 @@ namespace BattleShipBrain
             }
             else
             {
-                _currentPlayerNo--;  
+                _currentPlayerNo--;
             }
         }
-        
+
         public GameConfig CreateNewConfig(int newBoardSizeX, int newBoardSizeY, EShipTouchRule newTouchRule,
             List<ShipConfig> newShipConfigs)
-        { 
+        {
             GameConfig newGameConfig = new GameConfig();
             newGameConfig.BoardSizeX = newBoardSizeX;
             newGameConfig.BoardSizeY = newBoardSizeY;
@@ -90,7 +90,6 @@ namespace BattleShipBrain
         }
 
 
-        
         public void FillBoards()
         {
             for (var i = 0; i < 4; i++)
@@ -149,48 +148,90 @@ namespace BattleShipBrain
         public bool CheckIfCanPutShip(Ship shipToPut, int player)
         {
             EShipTouchRule currentTouchRule = GetTouchRule();
-            switch (player)
+            GameConfig config = _gameConfig;
+            if (player == 1) player = 2;
+
+            switch (currentTouchRule)
             {
-                case 0:
-                    if (currentTouchRule == EShipTouchRule.NoTouch)
+                case EShipTouchRule.NoTouch:
+                    if (GameBoards[player].Ships is null) return true;
+                    foreach (var coordinate in shipToPut.GetCords()!)
                     {
-                        if (GameBoards[0].Ships is null) return true;
- 
-                        foreach (var coordinate in shipToPut.GetCords()!)
+                        for (int y = -1; y < 2; y++)
                         {
-                            for (int y = -1; y < 2; y++)
+                            for (int x = -1; x < 2; x++)
                             {
-                                for (int x = -1; x < 2; x++)
+                                var xForPlacing = x;
+                                var yForPlacing = y;
+                                
+                                if (config.BoardSizeX - 1 - coordinate.X == 0) xForPlacing = 0;
+                                if (config.BoardSizeY - 1 - coordinate.Y == 0) yForPlacing = 0;
+                        
+                                if (coordinate.X == 0) xForPlacing = 0;
+                                if (coordinate.Y == 0) yForPlacing = 0;
+                        
+                        
+                                if (GameBoards[player].Board[coordinate.X + xForPlacing, coordinate.Y + yForPlacing].IsShip is true)
                                 {
-                                    if (GameBoards[0].Board[coordinate.X + x, coordinate.Y + y].IsShip is true)
-                                    {
-                                        return false;
-                                    }
-                                }   
+                                    return false;
+                                }
                             }
-                            // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
                         }
-
-                        return true;
-
+                        // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
                     }
-                    break;
-                case 1:
-                    break;
+                    return true;
+                case EShipTouchRule.CornerTouch:
+                    if (GameBoards[player].Ships is null) return true;
+                    foreach (var coordinate in shipToPut.GetCords()!)
+                    {
+                        for (int y = -1; y < 2; y++)
+                        {
+                            for (int x = -1; x < 2; x++)
+                            {
+                                var xForPlacing = x;
+                                var yForPlacing = y;
+                                
+                                if (config.BoardSizeX - 1 - coordinate.X == 0) xForPlacing = 0;
+                                if (config.BoardSizeY - 1 - coordinate.Y == 0) yForPlacing = 0;
+                        
+                                if (coordinate.X == 0) xForPlacing = 0;
+                                if (coordinate.Y == 0) yForPlacing = 0;
+                                
+                                if (yForPlacing == 1 || yForPlacing == -1) xForPlacing = 0;
+                        
+                                if (GameBoards[player].Board[coordinate.X + xForPlacing, coordinate.Y + yForPlacing].IsShip is true)
+                                {
+                                    return false;
+                                }
+                            }
+                        }
+                        // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                    }
+                    return true;
+                case EShipTouchRule.SideTouch:
+                    if (GameBoards[player].Ships is null) return true;
+                    foreach (var coordinate in shipToPut.GetCords()!)
+                    {
+                        if (GameBoards[player].Board[coordinate.X, coordinate.Y].IsShip is true)
+                        {
+                            return false;
+                        }
+                        // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                    }
+                    return true;
             }
-
             return false;
         }
 
-        public void PutShip(int player, Ship ship)
+        public bool PutShip(int player, Ship ship)
         {
             switch (player)
             {
                 case 0:
                     List<Ship> shipsA = new List<Ship>();
-                    if (GameBoards[0].Ships is null)
+                    if (CheckIfCanPutShip(ship, player))
                     {
-                        if (CheckIfCanPutShip(ship, player))
+                        if (GameBoards[0].Ships is null)
                         {
                             shipsA = new List<Ship>();
                             shipsA.Add(ship);
@@ -199,39 +240,55 @@ namespace BattleShipBrain
                             {
                                 GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
                             }
-                            break;
                         }
+                        else
+                        {
+                            GameBoards[0].Ships.Add(ship);
+                            foreach (var coordinate in ship.GetCords()!)
+                            {
+                                GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                            }
+                        }
+
+                        // Ships is placed, returning true 
+                        return true;
                     }
 
-                    if (CheckIfCanPutShip(ship, player))
-                    {
-                        GameBoards[0].Ships.Add(ship);
-                        foreach (var coordinate in ship.GetCords()!)
-                        {
-                            GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
-                        }
-                    }
-                    break;
+                    // Ships is not placed, returning false, did not get True in CheckIfCanPutShip
+                    return false;
+
                 case 1:
                     List<Ship> shipsB = new List<Ship>();
-                    if (GameBoards[2].Ships == null)
+                    if (CheckIfCanPutShip(ship, player))
                     {
-                        shipsB = new List<Ship>();
-                        shipsB.Add(ship);
-                        GameBoards[2].Ships = shipsB;
-                        foreach (var coordinate in ship.GetCords()!)
+                        if (GameBoards[2].Ships is null)
                         {
-                            GameBoards[2].Board[coordinate.X, coordinate.Y].IsShip = true;
+                            shipsB = new List<Ship>();
+                            shipsB.Add(ship);
+                            GameBoards[2].Ships = shipsB;
+                            foreach (var coordinate in ship.GetCords()!)
+                            {
+                                GameBoards[2].Board[coordinate.X, coordinate.Y].IsShip = true;
+                            }
                         }
-                        break;
+                        else
+                        {
+                            GameBoards[0].Ships.Add(ship);
+                            foreach (var coordinate in ship.GetCords()!)
+                            {
+                                GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                            }
+                            // Ships is placed, returning true 
+                        }
+
+                        return true;
                     }
-                    GameBoards[2].Ships.Add(ship);
-                    foreach (var coordinate in ship.GetCords()!)
-                    {
-                        GameBoards[2].Board[coordinate.X, coordinate.Y].IsShip = true;
-                    }
-                    break;
+
+                    // Ships is not placed, returning false, did not get True in CheckIfCanPutShip
+                    return false;
             }
+
+            return false;
         }
 
         public string GetConfJsonStr(GameConfig config)
@@ -240,22 +297,24 @@ namespace BattleShipBrain
             {
                 WriteIndented = true
             };
-            
+
             var confJsonStr = JsonSerializer.Serialize(config, jsonOptions);
 
             return confJsonStr;
         }
-        
-        
+
+
         public static string GetFileNameConfig(string configName)
         {
-            var fileNameConfig = _basePath + System.IO.Path.DirectorySeparatorChar + "Configs" + System.IO.Path.DirectorySeparatorChar + $"{configName}.json";
+            var fileNameConfig = _basePath + System.IO.Path.DirectorySeparatorChar + "Configs" +
+                                 System.IO.Path.DirectorySeparatorChar + $"{configName}.json";
             return fileNameConfig;
         }
-        
+
         public static string GetFileNameSave(string configName)
         {
-            var fileNameConfig = _basePath + System.IO.Path.DirectorySeparatorChar + "Saves" + System.IO.Path.DirectorySeparatorChar + $"{configName}.json";
+            var fileNameConfig = _basePath + System.IO.Path.DirectorySeparatorChar + "Saves" +
+                                 System.IO.Path.DirectorySeparatorChar + $"{configName}.json";
             return fileNameConfig;
         }
 
@@ -272,7 +331,7 @@ namespace BattleShipBrain
                 System.IO.File.WriteAllText(fileNameStandardConfig, confJsonStr);
             }
         }
-        
+
         public void SaveGameState(string saveName)
         {
             var fileNameSave = GetFileNameSave(saveName);
@@ -300,7 +359,7 @@ namespace BattleShipBrain
             var jsonStr = JsonSerializer.Serialize(dto, jsonOptions);
             return jsonStr;
         }
-        
+
         public SaveGameDTO RestoreBrainFromJson(string saveName)
         {
             var fileNameStandardConfig = GetFileNameSave(saveName);
@@ -309,7 +368,8 @@ namespace BattleShipBrain
             {
                 Console.WriteLine("Loading config...");
                 var saveText = System.IO.File.ReadAllText(fileNameStandardConfig);
-                saveGameDto = JsonSerializer.Deserialize<SaveGameDTO>(saveText) ?? throw new InvalidOperationException();
+                saveGameDto = JsonSerializer.Deserialize<SaveGameDTO>(saveText) ??
+                              throw new InvalidOperationException();
             }
 
             return saveGameDto;
@@ -331,11 +391,12 @@ namespace BattleShipBrain
                         str[j, i] = listA[j][i];
                     }
                 }
-                
+
 
                 GameBoards[counter].Board = str;
                 counter++;
             }
+
             _currentPlayerNo = dto.CurrentPlayerNo;
         }
     }
