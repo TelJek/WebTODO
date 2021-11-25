@@ -11,17 +11,17 @@ namespace BattleShipConsoleUI
 {
     public class BsConsoleUi
     {
-        private static BSBrain? _brain;
-        private string ConfigName;
-        private string ConfigType;
-        private string SaveName = "NewGame";
-        private string SaveType = "LOCAL";
+        private static BsBrain? _brain;
+        private readonly string _configName;
+        private readonly EDataType _configTypeData;
+        private string _saveName = "NewGame";
+        private EDataType _saveDataType = EDataType.Local;
 
-        public BsConsoleUi(BSBrain brain, string confName, string confType)
+        public BsConsoleUi(BsBrain brain, string confName, EDataType confTypeData)
         {
             _brain = brain;
-            ConfigName = confName;
-            ConfigType = confType;
+            _configName = confName;
+            _configTypeData = confTypeData;
         }
 
         public static void DrawBoard(BoardSquareState[,] board)
@@ -152,10 +152,10 @@ namespace BattleShipConsoleUI
         public void DrawMain(string player)
         {
             Console.Clear();
-            Console.WriteLine($"Loaded ConfigName: {ConfigName}");
-            Console.WriteLine($"Loaded ConfigType: {ConfigType}\n");
-            Console.WriteLine($"Loaded SaveName: {SaveName}");
-            Console.WriteLine($"Loaded SaveType: {SaveType}\n");
+            Console.WriteLine($"Loaded ConfigName: {_configName}");
+            Console.WriteLine($"Loaded ConfigType: {_configTypeData}\n");
+            Console.WriteLine($"Loaded SaveName: {_saveName}");
+            Console.WriteLine($"Loaded SaveType: {_saveDataType}\n");
             Console.WriteLine($"EShipTouchRule: {_brain!.GetTouchRule()}\n");
             Console.WriteLine("BattleShip menu\n");
             Console.WriteLine($"Player {player} Turn\n");
@@ -234,20 +234,21 @@ namespace BattleShipConsoleUI
             var saveName = Console.ReadLine()?.Trim();
             if (saveType != "" && saveName != "")
             {
-                SaveName = saveName!;
-                SaveType = saveType!;
-                if (saveType == "LOCAL")
+                _saveName = saveName!;
+                if (saveType == "LOCAL") _saveDataType = EDataType.Local;
+                if (saveType == "DB") _saveDataType = EDataType.DataBase;
+                if (_saveDataType is EDataType.Local)
                 {
                     var saveGameDto = brain?.RestoreBrainFromJson(saveName);
                     brain?.LoadNewGameDto(saveGameDto);
                 }
 
-                if (saveType == "DB")
+                if (_saveDataType is EDataType.DataBase)
                 {
                     var saveText = db.GameStateSaves.FirstOrDefault(s => s.SaveName == saveName);
                     if (saveText != null)
                     {
-                        var saveGameDto = JsonSerializer.Deserialize<SaveGameDTO>(saveText.SavedGameStateJsnString) ?? throw new InvalidOperationException();
+                        var saveGameDto = JsonSerializer.Deserialize<SaveGameDto>(saveText.SavedGameStateJsnString) ?? throw new InvalidOperationException();
                         brain?.LoadNewGameDto(saveGameDto);
                     }
                 } 

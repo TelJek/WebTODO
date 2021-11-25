@@ -6,4 +6,5 @@ namespace BattleShipBrain
         CornerTouch,
         SideTouch
     }
+    
 }

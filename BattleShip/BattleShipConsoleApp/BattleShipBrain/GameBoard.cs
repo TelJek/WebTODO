@@ -6,11 +6,11 @@ namespace BattleShipBrain
     {
         public BoardSquareState[,] Board { get; set; } = null!;
         public List<Ship> Ships { get; set; } = default!;
-        public string Type { get; set; }
+        public EGameBoardType GameBoardType { get; set; }
         
-        public GameBoard(string type)
+        public GameBoard(EGameBoardType gameBoardType)
         {
-            Type = type;
+            GameBoardType = gameBoardType;
         }
     }
 }

@@ -8,118 +8,112 @@ using DAL;
 
 namespace BattleShipConsoleApp
 {
-    class Program
+    internal class Program
     {
         private static string? _basePath;
-        private static GameConfig conf = new GameConfig();
+        private static readonly GameConfig Config = new();
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Hello Battleship!");
-            _basePath = args.Length == 1 ? args[0] : System.IO.Directory.GetCurrentDirectory();
-            Console.WriteLine($"Base path: {_basePath}");
+            _basePath = args.Length == 1 ? args[0] : Directory.GetCurrentDirectory();
 
-            SaveConfig("default", conf);
-            
-            DirectoryInfo di = new DirectoryInfo(@$"{_basePath + System.IO.Path.DirectorySeparatorChar + "Configs"}");
+            SaveConfig("default", Config);
+
+            DirectoryInfo di = new(@$"{_basePath + Path.DirectorySeparatorChar + "Configs"}");
             FileInfo[] files = di.GetFiles("*.json");
-            string str = "";
-            
-            var inputInMethod = "";
-            var confType = "";
+
             Console.Clear();
-            Console.WriteLine(_basePath + System.IO.Path.DirectorySeparatorChar + "Configs");
             Console.WriteLine("=========| Load Configuration |=========\n");
-            Console.WriteLine("Available: \n");
+            Console.WriteLine("Available Configurations !\n");
             Console.WriteLine("=========| Load Local Configuration |=========");
             Console.WriteLine();
-            foreach (FileInfo file in files)
-            {
-                Console.WriteLine(file.Name.Split(".")[0]);
-            }
+            foreach (FileInfo file in files) Console.WriteLine(file.Name.Split(".")[0]);
             Console.WriteLine();
             Console.WriteLine("=========| Load DB Configuration |=========");
             Console.WriteLine();
             using var db = new ApplicationDbContext();
-            foreach (var dbConfig in db.GameConfigSaves)
-            {
-                Console.WriteLine(dbConfig.ConfigName);
-            }
+            foreach (var dbConfig in db.GameConfigSaves) Console.WriteLine(dbConfig.ConfigName);
             Console.WriteLine();
             Console.WriteLine("=============================================");
-            while (confType == "" || inputInMethod == "")
+            var inputDataStr = "";
+            var configDataTypeStr = "";
+            while (configDataTypeStr == "" || inputDataStr == "")
             {
                 Console.Write("Db or Local: ");
-                confType = Console.ReadLine()?.Trim().ToUpper();
+                configDataTypeStr = Console.ReadLine()?.Trim().ToUpper();
                 Console.Write("Your choice(R to Load Default): ");
-                inputInMethod = Console.ReadLine()?.Trim();
+                inputDataStr = Console.ReadLine()?.Trim();
                 Console.WriteLine();
             }
-            StartProgram(inputInMethod, confType);
+
+            EDataType configDataType = EDataType.NotDefined;
+            if (configDataTypeStr == "DB") configDataType = EDataType.DataBase;
+            if (configDataTypeStr == "LOCAL") configDataType = EDataType.Local;
+            StartProgram(inputDataStr!, configDataType);
         }
 
-        public static string GetFileNameConfig(string configName)
+        private static string GetFileNameConfig(string configName)
         {
-            var fileNameConfig = _basePath + System.IO.Path.DirectorySeparatorChar + "Configs" + System.IO.Path.DirectorySeparatorChar + $"{configName}.json";
+            var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Configs" + Path.DirectorySeparatorChar +
+                                 $"{configName}.json";
             return fileNameConfig;
         }
 
         private static string GetConfJsonStr(GameConfig config)
         {
-            var jsonOptions = new JsonSerializerOptions()
+            var jsonOptions = new JsonSerializerOptions
             {
                 WriteIndented = true
             };
-            
+
             var confJsonStr = JsonSerializer.Serialize(config, jsonOptions);
 
             return confJsonStr;
         }
 
-        public static void SaveConfig(string configName, GameConfig config)
+        private static void SaveConfig(string configName, GameConfig config)
         {
             var fileNameStandardConfig = GetFileNameConfig(configName);
 
             var confJsonStr = GetConfJsonStr(config);
 
             Console.WriteLine($"{configName} conf is in: " + fileNameStandardConfig);
-            if (!System.IO.File.Exists(fileNameStandardConfig))
+            if (!File.Exists(fileNameStandardConfig))
             {
                 Console.WriteLine($"Saving {configName} config!");
-                System.IO.File.WriteAllText(fileNameStandardConfig, confJsonStr);
+                File.WriteAllText(fileNameStandardConfig, confJsonStr);
             }
         }
 
-        public static GameConfig LoadNewConfig(string configName, string loadFrom)
+        private static GameConfig LoadNewConfig(string configName, EDataType loadFromDataType)
         {
-            GameConfig config = new GameConfig();
+            GameConfig config = new();
             var fileNameStandardConfig = GetFileNameConfig(configName);
-            if (loadFrom == "LOCAL")
-            {
-                if (System.IO.File.Exists(fileNameStandardConfig))
+            if (loadFromDataType is EDataType.Local)
+                if (File.Exists(fileNameStandardConfig))
                 {
                     Console.WriteLine("Loading config...");
-                    var confText = System.IO.File.ReadAllText(fileNameStandardConfig);
+                    var confText = File.ReadAllText(fileNameStandardConfig);
                     config = JsonSerializer.Deserialize<GameConfig>(confText) ?? throw new InvalidOperationException();
                 }
-            }
-            if (loadFrom == "DB")
+
+            if (loadFromDataType is EDataType.DataBase)
             {
                 using var db = new ApplicationDbContext();
-                var confText = db.GameConfigSaves.FirstOrDefault(c => c.ConfigName == configName);;
+                var confText = db.GameConfigSaves.FirstOrDefault(c => c.ConfigName == configName);
                 if (confText != null)
-                {
-                    config = JsonSerializer.Deserialize<GameConfig>(confText.GameConfigJsnString) ?? throw new InvalidOperationException();
-                }
+                    config = JsonSerializer.Deserialize<GameConfig>(confText.GameConfigJsnString) ??
+                             throw new InvalidOperationException();
             }
-            
+
             return config;
         }
-        
-        static void StartProgram(string config, string type)
+
+        private static void StartProgram(string config, EDataType type)
         {
-            BSBrain brain = new BSBrain(LoadNewConfig(config, type), _basePath); 
-            BsConsoleUi console = new BsConsoleUi(brain, config, type);
+            BsBrain brain = new(LoadNewConfig(config, type), _basePath!);
+            BsConsoleUi console = new(brain, config, type);
             console.DrawUi("main");
         }
     }

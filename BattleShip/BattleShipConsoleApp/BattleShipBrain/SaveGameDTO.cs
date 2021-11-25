@@ -5,25 +5,24 @@ using System.Linq;
 namespace BattleShipBrain
 {
     // DTO - Data Transfer Object
-    public class SaveGameDTO
+    public class SaveGameDto
     {
-        public int SaveGameDTOId { get; set; }
+        public int SaveGameDtoId { get; set; }
         public int CurrentPlayerNo { get; set; } = 0;
-        public GameBoardDTO[] GameBoards  { get; set; } = new GameBoardDTO[4];
+        public GameBoardDto[] GameBoards  { get; set; } = new GameBoardDto[4];
         
-        public class GameBoardDTO
+        public class GameBoardDto
         {
-            public int GameBoardDTOId { get; set; }
             public List<List<BoardSquareState>>? Board { get; set; }
             public List<Ship>? Ships { get; set; }
         }
 
         public void SetGameBoards(GameBoard[] gameBoards)
         {
-            GameBoards[0] = new GameBoardDTO();
-            GameBoards[1] = new GameBoardDTO();
-            GameBoards[2] = new GameBoardDTO();
-            GameBoards[3] = new GameBoardDTO();
+            GameBoards[0] = new GameBoardDto();
+            GameBoards[1] = new GameBoardDto();
+            GameBoards[2] = new GameBoardDto();
+            GameBoards[3] = new GameBoardDto();
 
             for (int x = 0; x < 4; x++)
             {
@@ -35,9 +34,6 @@ namespace BattleShipBrain
                 GameBoards[x].Board = list;
                 GameBoards[x].Ships = gameBoards[x].Ships;
             }
-            
         }
-        
-
     }
 }
