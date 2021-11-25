@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -45,133 +46,166 @@ namespace BattleShipConsoleUI
             }
         }
 
-        public void DrawUi(string level)
-        {
-            var brain = _brain;
-            var inputInMethod = " ";
-            var player = "";
-            if (brain?.GetPlayerNum() == 0)
-            {
-                player = "A";
-            }
-
-            if (brain?.GetPlayerNum() == 1)
-            {
-                player = "B";
-            } 
-
-            if (level == "main")
-            {
-                DrawMain(player);
-            }
-
-            if (level == "playerABoards")
-            {
-                inputInMethod = PlayerBoards(0);
-            }
-
-            if (level == "playerBBoards")
-            {
-                inputInMethod = PlayerBoards(1);
-            }
-
-            if (level == "playerAShips")
-            {
-                inputInMethod = PlayerShips(0);
-            }
-
-            if (level == "playerBShips")
-            {
-                inputInMethod = PlayerShips(1);
-            }
-
-            if (level == "playerABoardMines")
-            {
-                if (brain?.GetPlayerNum() == 1)
-                {
-                    inputInMethod = PlayerMines(3);
-                }
-                else
-                {
-                    inputInMethod = ErrorWrongPlayer();
-                }
-            }
-
-            if (level == "playerBBoardMines")
-            {
-                if (brain?.GetPlayerNum() == 0)
-                {
-                    inputInMethod = PlayerMines(1);
-                }
-                else
-                {
-                    inputInMethod = ErrorWrongPlayer();
-                }
-            }
-
-            if (level == "configsMenu")
-            {
-                Console.WriteLine("=========| Configuration Menu |=========\n");
-                Console.WriteLine("1) Create New Configuration\n");
-                Console.WriteLine("=============================================");
-                Console.Write("R to Return: ");
-                inputInMethod = Console.ReadLine()?.Trim().ToUpper();
-                if (inputInMethod == "1")
-                {
-                    inputInMethod = ConfigMenu();
-                }
-            }
-
-            if (level == "savesMenu")
-            {
-                Console.WriteLine("=========| Saving Menu |=========\n");
-                Console.WriteLine("1) Save");
-                Console.WriteLine("2) Load\n");
-                Console.WriteLine("=============================================");
-                Console.Write("R to Return: ");
-                inputInMethod = Console.ReadLine()?.Trim().ToUpper();
-                if (inputInMethod == "1")
-                {
-                    CreateSave();
-                    DrawUi("main");
-                }
-
-                if (inputInMethod == "2")
-                {
-                    LoadSave();
-                    DrawUi("main");
-                }
-            }
-
-            if (inputInMethod == "R")
-            {
-                DrawUi("main");
-            }
-        }
-
-        public void DrawMain(string player)
+        public void DrawConsoleUi()
         {
             Console.Clear();
-            Console.WriteLine($"Loaded ConfigName: {_configName}");
-            Console.WriteLine($"Loaded ConfigType: {_configTypeData}\n");
-            Console.WriteLine($"Loaded SaveName: {_saveName}");
-            Console.WriteLine($"Loaded SaveType: {_saveDataType}\n");
-            Console.WriteLine($"EShipTouchRule: {_brain!.GetTouchRule()}\n");
-            Console.WriteLine("BattleShip menu\n");
-            Console.WriteLine($"Player {player} Turn\n");
-            Console.WriteLine("1) Draw Player A Boards");
-            Console.WriteLine("2) Draw Player B Boards");
-            Console.WriteLine("3) Player A ships setup");
-            Console.WriteLine("4) Player B ships setup");
-            Console.WriteLine("5) Put a mine to Player A board");
-            Console.WriteLine("6) Put a mine to Player B board");
-            Console.WriteLine("7) Configuration settings");
-            Console.WriteLine("8) Save settings\n");
-            Console.WriteLine("Exit to exit\n");
-            Console.Write("Your choice:");
-            var input = Console.ReadLine()?.Trim().ToUpper();
-            Console.WriteLine();
-            RunMethod(input);
+            
+            var mainMenu = new Menu(ReturnDataNames, ReturnDataTypes, "BattleShip Main", EMenuLevel.Root);
+            mainMenu.AddMenuItems(new List<MenuItem>()
+            {
+                new MenuItem("A", "Player A", PlayerAMenu),
+                new MenuItem("B", "Player B", PlayerBMenu),
+                new MenuItem("C", "Configuration", ConfigurationMenu),
+                new MenuItem("S", "Saves", SavesMenu)
+            });
+
+            mainMenu.Run();
+        }
+        
+        private List<string> ReturnDataNames()
+        {
+            List<string> listWithHeaderDataNames = new List<string>();
+            var playerLetter = "Player Letter Not Found!";
+            if (_brain!.GetPlayerNum() == 0) playerLetter = "A";
+            if (_brain.GetPlayerNum() == 1) playerLetter = "B";
+            listWithHeaderDataNames.Add(playerLetter);
+            listWithHeaderDataNames.Add(_configName);
+            listWithHeaderDataNames.Add(_saveName);
+            return listWithHeaderDataNames;
+        }
+        
+        private List<EDataType> ReturnDataTypes()
+        {
+            List<EDataType> listWithHeaderDataTypes = new List<EDataType>();
+            listWithHeaderDataTypes.Add(_configTypeData);
+            listWithHeaderDataTypes.Add(_saveDataType);
+            return listWithHeaderDataTypes;
+        }
+
+        private string PlayerAMenu()
+        {
+            var menu = new Menu(ReturnDataNames, ReturnDataTypes, "Player A", EMenuLevel.First);
+            menu.AddMenuItems(new List<MenuItem>()
+            {
+                new MenuItem("A1", "Show my boards", ShowPlayerABoards),
+                new MenuItem("A2", "Put my ships", PutShipsPlayerA),
+                new MenuItem("A3", "Put mine", PutMinesPlayerA)
+            });
+            var res = menu.Run();
+            return res;
+        }
+        
+        private string PlayerBMenu()
+        {
+            var menu = new Menu(ReturnDataNames, ReturnDataTypes, "Player B", EMenuLevel.First);
+            menu.AddMenuItems(new List<MenuItem>()
+            {
+                new MenuItem("B1", "Show my boards", ShowPlayerBBoards),
+                new MenuItem("B2", "Put my ships", PutShipsPlayerB),
+                new MenuItem("B3", "Put mines", PutMinesPlayerB),
+            });
+            var res = menu.Run();
+            return res;
+        }
+        
+        private string ConfigurationMenu()
+        {
+            var menu = new Menu(ReturnDataNames, ReturnDataTypes, "Configuration Settings", EMenuLevel.First);
+            menu.AddMenuItems(new List<MenuItem>()
+            {
+                new MenuItem("C1", "Create new configuration", CreateNewConfig)
+            });
+            var res = menu.Run();
+            return res;
+        }
+        
+        private string SavesMenu()
+        {
+            var menu = new Menu(ReturnDataNames, ReturnDataTypes, "Saves Settings", EMenuLevel.First);
+            menu.AddMenuItems(new List<MenuItem>()
+            {
+                new MenuItem("S1", "Save game", SaveGame),
+                new MenuItem("S2", "Load game", LoadNewSave)
+            });
+            var res = menu.Run();
+            return res;
+        }
+
+        private string ShowPlayerABoards()
+        {
+            PlayerBoards(0);
+            Console.ReadLine();
+            return "";
+        }
+        
+        private string ShowPlayerBBoards()
+        {
+            PlayerBoards(1);
+            Console.ReadLine();
+            return "";
+        }
+        
+        private string PutShipsPlayerA()
+        {
+            PlayerShips(0);
+            Console.ReadLine();
+            return "";
+        }
+        
+        private string PutShipsPlayerB()
+        {
+            PlayerShips(1);
+            Console.ReadLine();
+            return "";
+        }
+        
+        private string PutMinesPlayerA()
+        {
+            if (_brain?.GetPlayerNum() == 0)
+            {
+                PlayerMines(1);
+            }
+            else
+            {
+                ErrorWrongPlayer();
+            }
+            Console.ReadLine();
+            return "";
+        }
+        
+        private string PutMinesPlayerB()
+        {
+            if (_brain?.GetPlayerNum() == 1)
+            {
+                PlayerMines(3);
+            }
+            else
+            {
+                ErrorWrongPlayer();
+            }
+            Console.ReadLine();
+            return "";
+        }
+        
+        private string CreateNewConfig()
+        {
+            ConfigMenu();
+            Console.ReadLine();
+            return "";
+        }
+        
+        private string LoadNewSave()
+        {
+            LoadSave();
+            Console.ReadLine();
+            return "";
+        }
+        
+        private string SaveGame()
+        {
+            CreateSave();
+            Console.ReadLine();
+            return "";
         }
 
         public void CreateSave()
@@ -199,8 +233,6 @@ namespace BattleShipConsoleUI
             }
             Console.WriteLine($"Saved: Save name {saveName}");
             Console.WriteLine("=============================================");
-            Console.Write("R to Return: ");
-            var res = Console.ReadLine()?.Trim();
         }
 
         public void LoadSave()
@@ -261,7 +293,7 @@ namespace BattleShipConsoleUI
             }
         }
 
-        public string? PlayerBoards(int playerNum)
+        public void PlayerBoards(int playerNum)
         {
             var brain = _brain;
 
@@ -273,7 +305,6 @@ namespace BattleShipConsoleUI
                 Console.WriteLine($"=========| Player A Board with Mines|=========");
                 DrawBoard(brain.GetBoard(1));
                 Console.WriteLine("=============================================");
-                Console.Write("R to Return: ");
             }
             if (playerNum == 1)
             {
@@ -283,18 +314,14 @@ namespace BattleShipConsoleUI
                 Console.WriteLine($"=========| Player B Board with Mines|=========");
                 DrawBoard(brain.GetBoard(3));
                 Console.WriteLine("=============================================");
-                Console.Write("R to Return: ");
             }
-            
-            var res = Console.ReadLine()?.Trim().ToUpper();
-            return res;
         }
 
-        public string? PlayerMines(int playerNum)
+        public void PlayerMines(int playerNum)
         {
             string playerLetter = "";
-            if (playerNum == 3) {playerLetter = "A";}
-            if (playerNum == 1) {playerLetter = "B";}
+            if (playerNum == 3) {playerLetter = "B";}
+            if (playerNum == 1) {playerLetter = "A";}
             var brain = _brain;
             brain?.ChangePlayerNum();
             Console.WriteLine($"=========| Player {playerLetter} Board with Mines |=========");
@@ -306,12 +333,9 @@ namespace BattleShipConsoleUI
             if (playerNum == 3) {brain.PutBomb(xBomb, yBomb, 0);}
             if (playerNum == 1) {brain.PutBomb(xBomb, yBomb, 1);}
             Console.WriteLine("=============================================");
-            Console.Write("R to Return: ");
-            var res = Console.ReadLine()?.Trim().ToUpper();
-            return res;
         }
         
-        public string? PlayerShips(int playerNum)
+        public void PlayerShips(int playerNum)
         {
             string playerLetter = "";
             if (playerNum == 0) {playerLetter = "A";}
@@ -324,9 +348,6 @@ namespace BattleShipConsoleUI
             {
                 Console.WriteLine("\nYou do not have available ships to use!\n");
                 Console.WriteLine("=============================================");
-                Console.Write("R to Return: ");
-                var resError = Console.ReadLine()?.Trim().ToUpper();
-                return resError;
             }
             
             Console.WriteLine($"=========| Player {playerLetter} Ships |=========");
@@ -366,12 +387,9 @@ namespace BattleShipConsoleUI
 
             Console.WriteLine("\nYou have placed all ships!\n");
             Console.WriteLine("=============================================");
-            Console.Write("R to Return: ");
-            var res = Console.ReadLine()?.Trim().ToUpper();
-            return res;
         }
 
-        public string? ConfigMenu()
+        public void ConfigMenu()
         {
             var brain = _brain;
             Console.WriteLine("=========| New Configuration |=========\n");
@@ -422,9 +440,6 @@ namespace BattleShipConsoleUI
             Console.WriteLine($"Configuration {configName} was Created and Saved!");
 
             Console.WriteLine("=============================================");
-            Console.Write("R to Return: ");
-            var res = Console.ReadLine()?.Trim().ToUpper();
-            return res;
         }
 
         public EShipTouchRule NewTouchRule(string rule)
@@ -442,7 +457,7 @@ namespace BattleShipConsoleUI
             }
         }
 
-        private string ErrorWrongPlayer()
+        private void ErrorWrongPlayer()
         {
             var brain = _brain;
             var player = "";
@@ -461,8 +476,6 @@ namespace BattleShipConsoleUI
             Console.WriteLine($"It is Player {player} Turn!");
             Console.WriteLine("=============================================");
             Console.WriteLine("Press ENTER to continue");
-            Console.ReadLine()?.Trim().ToUpper();
-            return "R";
         }
 
         public ShipConfig NewShipConfig()
@@ -478,37 +491,6 @@ namespace BattleShipConsoleUI
             var shipShipSizeX = int.Parse(Console.ReadLine()?.Trim()!);
             return new ShipConfig()
                 {Name = shipName, Quantity = shipQuantity, ShipSizeY = shipShipSizeY, ShipSizeX = shipShipSizeX};
-        }
-
-        public void RunMethod(string input)
-        {
-            switch (input)
-            {
-                case "1":
-                    DrawUi("playerABoards");
-                    break;
-                case "2":
-                    DrawUi("playerBBoards");
-                    break;
-                case "3":
-                    DrawUi("playerAShips");
-                    break;
-                case "4":
-                    DrawUi("playerBShips");
-                    break;
-                case "5":
-                    DrawUi("playerABoardMines");
-                    break;
-                case "6":
-                    DrawUi("playerBBoardMines");
-                    break;
-                case "7":
-                    DrawUi("configsMenu");
-                    break;
-                case "8":
-                    DrawUi("savesMenu");
-                    break;
-            }
         }
     }
 }

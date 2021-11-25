@@ -1,30 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BattleShipBrain;
+using MenuSystem;
 
-namespace MenuSystem
+namespace BattleShipConsoleUI
 {
     public class Menu
     {
         private readonly EMenuLevel _menuLevel;
 
-        private readonly List<MenuItem> _menuItems = new List<MenuItem>();
-        private readonly MenuItem _menuItemExit = new MenuItem("E", "Exit", null);
-        private readonly MenuItem _menuItemReturn = new MenuItem("R", "Return", null);
-        private readonly MenuItem _menuItemMain = new MenuItem("M", "Main", null);
+        private readonly List<BattleShipConsoleUI.MenuItem> _menuItems = new List<BattleShipConsoleUI.MenuItem>();
+        private readonly BattleShipConsoleUI.MenuItem _menuItemExit = new BattleShipConsoleUI.MenuItem("E", "Exit", null);
+        private readonly BattleShipConsoleUI.MenuItem _menuItemReturn = new BattleShipConsoleUI.MenuItem("R", "Return", null);
+        private readonly BattleShipConsoleUI.MenuItem _menuItemMain = new BattleShipConsoleUI.MenuItem("M", "Main", null);
 
         private readonly HashSet<string> _menuShortCuts = new HashSet<string>();
         private readonly HashSet<string> _menuSpecialShortCuts = new HashSet<string>();
 
         private readonly string _title;
 
-        private readonly Func<string> _getHeaderInfoString;
+        private readonly Func<List<string>> _getNamesForHeaderInfoString;
+        private readonly Func<List<EDataType>> _getDataTypesForHeaderInfoString;
 
-        public Menu(Func<string> getHeaderInfoString, string title, EMenuLevel menuLevel)
+        public Menu(Func<List<string>> getNamesForHeaderInfoString, Func<List<EDataType>> getDataTypesForHeaderInfoString, string title, EMenuLevel menuLevel)
         {
-            _getHeaderInfoString = getHeaderInfoString;
+            _getNamesForHeaderInfoString = getNamesForHeaderInfoString;
             _title = title;
             _menuLevel = menuLevel;
+            _getDataTypesForHeaderInfoString = getDataTypesForHeaderInfoString;
 
             switch (_menuLevel)
             {
@@ -44,7 +48,7 @@ namespace MenuSystem
             }
         }
 
-        public void AddMenuItem(MenuItem item, int position = -1)
+        public void AddMenuItem(BattleShipConsoleUI.MenuItem item, int position = -1)
         {
             if (_menuSpecialShortCuts.Add(item.ShortCut.ToUpper()) == false)
             {
@@ -72,7 +76,7 @@ namespace MenuSystem
             _menuItems.RemoveAt(position);
         }
 
-        public void AddMenuItems(List<MenuItem> items)
+        public void AddMenuItems(List<BattleShipConsoleUI.MenuItem> items)
         {
             foreach (var menuItem in items)
             {
@@ -86,9 +90,11 @@ namespace MenuSystem
             var input = "";
             do
             {
+                Console.Clear();
                 OutputMenu();
-                Console.Write("Your choice:");
+                Console.Write("Your choice: ");
                 input = Console.ReadLine()?.Trim().ToUpper();
+                Console.WriteLine();
                 var isInputValid = _menuShortCuts.Contains(input);
                 if (isInputValid)
                 {
@@ -112,12 +118,20 @@ namespace MenuSystem
         private void OutputMenu()
         {
             Console.WriteLine("====> " + _title + " <====");
-            if (_getHeaderInfoString != null)
+            if (_getNamesForHeaderInfoString != null)
             {
-                var headerInfo = _getHeaderInfoString();
-                if (headerInfo != null)
+                var headerInfoCurrentPlayer = _getNamesForHeaderInfoString()[0];
+                var headerInfoLoadedConfigName = _getNamesForHeaderInfoString()[1];
+                var headerInfoLoadedConfigType = _getDataTypesForHeaderInfoString()[0];
+                var headerInfoLoadedSaveName = _getNamesForHeaderInfoString()[2];
+                var headerInfoLoadedSaveType = _getDataTypesForHeaderInfoString()[1];
+                if (headerInfoCurrentPlayer != null)
                 {
-                    Console.WriteLine(headerInfo);
+                    Console.WriteLine($"Current player to move: {headerInfoCurrentPlayer}");
+                    Console.WriteLine($"Current loaded configuration name: {headerInfoLoadedConfigName}");
+                    Console.WriteLine($"Current loaded configuration type: {headerInfoLoadedConfigType}");
+                    Console.WriteLine($"Current loaded save name: {headerInfoLoadedSaveName}");
+                    Console.WriteLine($"Current loaded save type: {headerInfoLoadedSaveType}");
                 }
             }
 

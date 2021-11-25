@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MenuSystem
+namespace BattleShipConsoleUI
 {
     public class MenuItem
     {

@@ -51,6 +51,7 @@ namespace BattleShipConsoleApp
             if (configDataTypeStr == "DB") configDataType = EDataType.DataBase;
             if (configDataTypeStr == "LOCAL") configDataType = EDataType.Local;
             StartProgram(inputDataStr!, configDataType);
+            
         }
 
         private static string GetFileNameConfig(string configName)
@@ -109,12 +110,15 @@ namespace BattleShipConsoleApp
 
             return config;
         }
-
+        
         private static void StartProgram(string config, EDataType type)
         {
             BsBrain brain = new(LoadNewConfig(config, type), _basePath!);
             BsConsoleUi console = new(brain, config, type);
-            console.DrawUi("main");
+            console.DrawConsoleUi();
+            // console.DrawUi("main");
         }
     }
 }
+
+    
