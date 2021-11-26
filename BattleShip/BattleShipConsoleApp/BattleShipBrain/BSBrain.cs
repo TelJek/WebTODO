@@ -10,6 +10,7 @@ namespace BattleShipBrain
         private static string? _basePath;
 
         private EPlayer _currentPlayer = EPlayer.PlayerA;
+        private EPlayer _winnerPlayer = EPlayer.NotDefined;
         private readonly GameBoard[] _gameBoards = new GameBoard[4];
         private readonly GameConfig _gameConfig;
         private bool _playerAShipDone;
@@ -47,6 +48,23 @@ namespace BattleShipBrain
             }
         }
 
+        public bool DidPlayerWon(EPlayer playerToCheckWin)
+        {
+            var boardIntToCheck = 0;
+            if (playerToCheckWin is EPlayer.PlayerA) boardIntToCheck = 2;
+            
+            var boardToCheck = GetBoard(boardIntToCheck);
+            for (var x = 0; x < boardToCheck.GetLength(0); x++)
+            for (var y = 0; y < boardToCheck.GetLength(1); y++)
+                if (boardToCheck[x, y].IsShip && !boardToCheck[x, y].IsBomb)
+                {
+                    return false;
+                }
+
+            _winnerPlayer = playerToCheckWin;
+            return true;
+        }
+        
         public bool CheckPlayerPlacedShips(EPlayer player)
         {
             switch (player)
@@ -82,6 +100,11 @@ namespace BattleShipBrain
         public EPlayer GetPlayer()
         {
             return _currentPlayer;
+        }
+        
+        public EPlayer GetWinner()
+        {
+            return _winnerPlayer;
         }
 
         public void ChangePlayerNum()

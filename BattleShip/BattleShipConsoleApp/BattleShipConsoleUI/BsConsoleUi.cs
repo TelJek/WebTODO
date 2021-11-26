@@ -320,46 +320,54 @@ namespace BattleShipConsoleUI
         public void PlayerMines(EPlayer player)
         {
             var brain = _brain;
-            Console.WriteLine($"=========| {player} Board with Mines |=========");
-            switch (player)
+            if (brain!.GetWinner() is EPlayer.NotDefined)
             {
-                case EPlayer.PlayerA:
-                    DrawBoard(brain?.GetBoard(1)!);
-                    break;
-                case EPlayer.PlayerB:
-                    DrawBoard(brain?.GetBoard(3)!);
-                    break;
-            }
-            Console.Write("Choose Y side number: ");
-            var yBomb = int.Parse(Console.ReadLine()?.Trim()!);
-            Console.Write("Choose X side number: ");
-            var xBomb = int.Parse(Console.ReadLine()?.Trim()!);
-            if (player is EPlayer.PlayerB)
-            {
-                if (brain!.DidBombHit(xBomb, yBomb, EPlayer.PlayerA))
+                Console.WriteLine($"=========| {player} Board with Mines |=========");
+                switch (player)
                 {
-                    Console.WriteLine("Nice hit!");
+                    case EPlayer.PlayerA:
+                        DrawBoard(brain?.GetBoard(1)!);
+                        break;
+                    case EPlayer.PlayerB:
+                        DrawBoard(brain?.GetBoard(3)!);
+                        break;
+                }
+                Console.Write("Choose Y side number: ");
+                var yBomb = int.Parse(Console.ReadLine()?.Trim()!);
+                Console.Write("Choose X side number: ");
+                var xBomb = int.Parse(Console.ReadLine()?.Trim()!);
+            
+                var playerToHit = EPlayer.NotDefined;
+                if (player is EPlayer.PlayerA) playerToHit = EPlayer.PlayerB;
+                if (player is EPlayer.PlayerB) playerToHit = EPlayer.PlayerA;
+            
+                if (brain!.DidBombHit(xBomb, yBomb, playerToHit))
+                {
+                    Console.WriteLine("Nice hit!\n");
                 }
                 else
                 {
+                    Console.WriteLine("You miss!\n");
                     brain.ChangePlayerNum();
                 }
-                brain!.PutBomb(xBomb, yBomb, EPlayer.PlayerA);
+                brain!.PutBomb(xBomb, yBomb, playerToHit);
+            
+                // check if player won
+                if (brain.DidPlayerWon(player))
+                {
+                    Console.WriteLine("You won!\n");
+                    Console.WriteLine($"{playerToHit} have lost all ships!\n");
+                }
+            
+                Console.WriteLine("=============================================");
+            }
+            else
+            {
+                Console.WriteLine("=============================================");
+                Console.WriteLine($"\n {brain.GetWinner()} has already won! GG \n");
+                Console.WriteLine("=============================================");
             }
 
-            if (player is EPlayer.PlayerA)
-            {
-                if (brain!.DidBombHit(xBomb, yBomb, EPlayer.PlayerB))
-                {
-                    Console.WriteLine("Nice hit!");
-                }
-                else
-                {
-                    brain.ChangePlayerNum();
-                }
-                brain.PutBomb(xBomb, yBomb, EPlayer.PlayerB);
-            }
-            Console.WriteLine("=============================================");
         }
         
         public void PlayerShips(EPlayer player)
@@ -371,46 +379,48 @@ namespace BattleShipConsoleUI
             {
                 Console.WriteLine("\nYou do not have available ships to use!\n");
                 Console.WriteLine("=============================================");
+                
             }
-            
-            Console.WriteLine($"=========| {player} Ships |=========");
-            if (player is EPlayer.PlayerA) DrawBoard(brain?.GetBoard(0)!);
-            if (player is EPlayer.PlayerB) DrawBoard(brain?.GetBoard(1)!);
-            Console.WriteLine("=============================================");
-            
-            if (gameConfig!.ShipConfigs.Count != 0)
+            else
             {
-                foreach (var ship in gameConfig!.ShipConfigs)
+                Console.WriteLine($"=========| {player} Ships |=========");
+                if (player is EPlayer.PlayerA) DrawBoard(brain?.GetBoard(0)!);
+                if (player is EPlayer.PlayerB) DrawBoard(brain?.GetBoard(1)!);
+                Console.WriteLine("=============================================");
+            
+                if (gameConfig!.ShipConfigs.Count != 0)
                 {
-                    int shipCounter = ship.Quantity;
-                    int i = 0;
-                    while (i < ship.Quantity)
+                    foreach (var ship in gameConfig!.ShipConfigs)
                     {
-                        Console.WriteLine(
-                            $"Ship selected: Name {ship.Name} Quantity {shipCounter} ShipSizeX {ship.ShipSizeX} ShipSizeY {ship.ShipSizeY}");
-                        Console.Write("Choose Y side number: ");
-                        var yShip = int.Parse(Console.ReadLine()?.Trim()!);
-                        Console.Write("Choose X side number: ");
-                        var xShip = int.Parse(Console.ReadLine()?.Trim()!);
-                        var cord = new Coordinate();
-                        cord.X = xShip;
-                        cord.Y = yShip;
-                        if (brain!.PutShip(player, new Ship(ship.Name, cord, ship.ShipSizeX, ship.ShipSizeY)))
+                        int shipCounter = ship.Quantity;
+                        int i = 0;
+                        while (i < ship.Quantity)
                         {
-                            i++;
-                            shipCounter--;
-                        }
-                        else
-                        {
-                            Console.WriteLine($"\nYou cannot place Ship: {ship.Name} in X: {yShip} and Y: {xShip}!\n");
+                            Console.WriteLine(
+                                $"Ship selected: Name {ship.Name} Quantity {shipCounter} ShipSizeX {ship.ShipSizeX} ShipSizeY {ship.ShipSizeY}");
+                            Console.Write("Choose Y side number: ");
+                            var yShip = int.Parse(Console.ReadLine()?.Trim()!);
+                            Console.Write("Choose X side number: ");
+                            var xShip = int.Parse(Console.ReadLine()?.Trim()!);
+                            var cord = new Coordinate();
+                            cord.X = xShip;
+                            cord.Y = yShip;
+                            if (brain!.PutShip(player, new Ship(ship.Name, cord, ship.ShipSizeX, ship.ShipSizeY)))
+                            {
+                                i++;
+                                shipCounter--;
+                            }
+                            else
+                            {
+                                Console.WriteLine($"\nYou cannot place Ship: {ship.Name} in X: {yShip} and Y: {xShip}!\n");
+                            }
                         }
                     }
+                    brain!.PlayerPlacedShips(player);
                 }
-                brain!.PlayerPlacedShips(player);
+                Console.WriteLine("\nYou have placed all ships!\n");
+                Console.WriteLine("=============================================");
             }
-
-            Console.WriteLine("\nYou have placed all ships!\n");
-            Console.WriteLine("=============================================");
         }
 
         public void ConfigMenu()
