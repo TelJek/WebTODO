@@ -64,27 +64,28 @@ namespace BattleShipConsoleUI
         
         private List<string> ReturnDataNames()
         {
-            List<string> listWithHeaderDataNames = new List<string>();
-            var playerLetter = "Player Letter Not Found!";
-            if (_brain!.GetPlayerNum() == 0) playerLetter = "A";
-            if (_brain.GetPlayerNum() == 1) playerLetter = "B";
-            listWithHeaderDataNames.Add(playerLetter);
-            listWithHeaderDataNames.Add(_configName);
-            listWithHeaderDataNames.Add(_saveName);
+            List<string> listWithHeaderDataNames = new()
+            {
+                _brain!.GetPlayer().ToString(),
+                _configName,
+                _saveName
+            };
             return listWithHeaderDataNames;
         }
         
         private List<EDataType> ReturnDataTypes()
         {
-            List<EDataType> listWithHeaderDataTypes = new List<EDataType>();
-            listWithHeaderDataTypes.Add(_configTypeData);
-            listWithHeaderDataTypes.Add(_saveDataType);
+            List<EDataType> listWithHeaderDataTypes = new()
+            {
+                _configTypeData,
+                _saveDataType
+            };
             return listWithHeaderDataTypes;
         }
 
         private string PlayerAMenu()
         {
-            var menu = new Menu(ReturnDataNames, ReturnDataTypes, "Player A", EMenuLevel.First);
+            var menu = new Menu(ReturnDataNames, ReturnDataTypes, EPlayer.PlayerA.ToString(), EMenuLevel.First);
             menu.AddMenuItems(new List<MenuItem>()
             {
                 new MenuItem("A1", "Show my boards", ShowPlayerABoards),
@@ -97,7 +98,7 @@ namespace BattleShipConsoleUI
         
         private string PlayerBMenu()
         {
-            var menu = new Menu(ReturnDataNames, ReturnDataTypes, "Player B", EMenuLevel.First);
+            var menu = new Menu(ReturnDataNames, ReturnDataTypes, EPlayer.PlayerB.ToString(), EMenuLevel.First);
             menu.AddMenuItems(new List<MenuItem>()
             {
                 new MenuItem("B1", "Show my boards", ShowPlayerBBoards),
@@ -133,37 +134,37 @@ namespace BattleShipConsoleUI
 
         private string ShowPlayerABoards()
         {
-            PlayerBoards(0);
+            PlayerBoards(EPlayer.PlayerA);
             Console.ReadLine();
             return "";
         }
         
         private string ShowPlayerBBoards()
         {
-            PlayerBoards(1);
+            PlayerBoards(EPlayer.PlayerB);
             Console.ReadLine();
             return "";
         }
         
         private string PutShipsPlayerA()
         {
-            PlayerShips(0);
+            PlayerShips(EPlayer.PlayerA);
             Console.ReadLine();
             return "";
         }
         
         private string PutShipsPlayerB()
         {
-            PlayerShips(1);
+            PlayerShips(EPlayer.PlayerB);
             Console.ReadLine();
             return "";
         }
         
         private string PutMinesPlayerA()
         {
-            if (_brain?.GetPlayerNum() == 0)
+            if (_brain?.GetPlayer() is EPlayer.PlayerA)
             {
-                PlayerMines(1);
+                PlayerMines(EPlayer.PlayerA);
             }
             else
             {
@@ -175,9 +176,9 @@ namespace BattleShipConsoleUI
         
         private string PutMinesPlayerB()
         {
-            if (_brain?.GetPlayerNum() == 1)
+            if (_brain?.GetPlayer() is EPlayer.PlayerB)
             {
-                PlayerMines(3);
+                PlayerMines(EPlayer.PlayerB);
             }
             else
             {
@@ -196,8 +197,7 @@ namespace BattleShipConsoleUI
         
         private string LoadNewSave()
         {
-            LoadSave();
-            Console.ReadLine();
+            LoadSave(); 
             return "";
         }
         
@@ -293,11 +293,11 @@ namespace BattleShipConsoleUI
             }
         }
 
-        public void PlayerBoards(int playerNum)
+        public void PlayerBoards(EPlayer player)
         {
             var brain = _brain;
 
-            if (playerNum == 0)
+            if (player is EPlayer.PlayerA)
             {
                 Console.WriteLine($"--------- | Player A Boards | --------\n");
                 Console.WriteLine($"=========| Player A Board with Ships|=========");
@@ -306,7 +306,7 @@ namespace BattleShipConsoleUI
                 DrawBoard(brain.GetBoard(1));
                 Console.WriteLine("=============================================");
             }
-            if (playerNum == 1)
+            if (player is EPlayer.PlayerB)
             {
                 Console.WriteLine($"--------- | Player B Boards | --------\n");
                 Console.WriteLine($"=========| Player B Board with Ships|=========");
@@ -317,41 +317,65 @@ namespace BattleShipConsoleUI
             }
         }
 
-        public void PlayerMines(int playerNum)
+        public void PlayerMines(EPlayer player)
         {
-            string playerLetter = "";
-            if (playerNum == 3) {playerLetter = "B";}
-            if (playerNum == 1) {playerLetter = "A";}
             var brain = _brain;
-            brain?.ChangePlayerNum();
-            Console.WriteLine($"=========| Player {playerLetter} Board with Mines |=========");
-            DrawBoard(brain?.GetBoard(playerNum));
+            Console.WriteLine($"=========| {player} Board with Mines |=========");
+            switch (player)
+            {
+                case EPlayer.PlayerA:
+                    DrawBoard(brain?.GetBoard(1)!);
+                    break;
+                case EPlayer.PlayerB:
+                    DrawBoard(brain?.GetBoard(3)!);
+                    break;
+            }
             Console.Write("Choose Y side number: ");
             var yBomb = int.Parse(Console.ReadLine()?.Trim()!);
             Console.Write("Choose X side number: ");
             var xBomb = int.Parse(Console.ReadLine()?.Trim()!);
-            if (playerNum == 3) {brain.PutBomb(xBomb, yBomb, 0);}
-            if (playerNum == 1) {brain.PutBomb(xBomb, yBomb, 1);}
+            if (player is EPlayer.PlayerB)
+            {
+                if (brain!.DidBombHit(xBomb, yBomb, EPlayer.PlayerA))
+                {
+                    Console.WriteLine("Nice hit!");
+                }
+                else
+                {
+                    brain.ChangePlayerNum();
+                }
+                brain!.PutBomb(xBomb, yBomb, EPlayer.PlayerA);
+            }
+
+            if (player is EPlayer.PlayerA)
+            {
+                if (brain!.DidBombHit(xBomb, yBomb, EPlayer.PlayerB))
+                {
+                    Console.WriteLine("Nice hit!");
+                }
+                else
+                {
+                    brain.ChangePlayerNum();
+                }
+                brain.PutBomb(xBomb, yBomb, EPlayer.PlayerB);
+            }
             Console.WriteLine("=============================================");
         }
         
-        public void PlayerShips(int playerNum)
+        public void PlayerShips(EPlayer player)
         {
-            string playerLetter = "";
-            if (playerNum == 0) {playerLetter = "A";}
-            if (playerNum == 1) {playerLetter = "B";}
-
             var brain = _brain;
             var gameConfig = brain?.GetGameConfig();
 
-            if (brain!.CheckPlayerPlacedShips(playerNum) is true || gameConfig!.ShipConfigs.Count == 0)
+            if (brain!.CheckPlayerPlacedShips(player) is true || gameConfig!.ShipConfigs.Count == 0)
             {
                 Console.WriteLine("\nYou do not have available ships to use!\n");
                 Console.WriteLine("=============================================");
             }
             
-            Console.WriteLine($"=========| Player {playerLetter} Ships |=========");
-            DrawBoard(brain?.GetBoard(playerNum)!);
+            Console.WriteLine($"=========| {player} Ships |=========");
+            if (player is EPlayer.PlayerA) DrawBoard(brain?.GetBoard(0)!);
+            if (player is EPlayer.PlayerB) DrawBoard(brain?.GetBoard(1)!);
             Console.WriteLine("=============================================");
             
             if (gameConfig!.ShipConfigs.Count != 0)
@@ -371,18 +395,18 @@ namespace BattleShipConsoleUI
                         var cord = new Coordinate();
                         cord.X = xShip;
                         cord.Y = yShip;
-                        if (brain!.PutShip(playerNum, new Ship(ship.Name, cord, ship.ShipSizeX, ship.ShipSizeY)))
+                        if (brain!.PutShip(player, new Ship(ship.Name, cord, ship.ShipSizeX, ship.ShipSizeY)))
                         {
                             i++;
                             shipCounter--;
                         }
                         else
                         {
-                            Console.WriteLine($"\nYou cannot place Ship: {ship.Name} in X: {xShip} and Y: {yShip}!\n");
+                            Console.WriteLine($"\nYou cannot place Ship: {ship.Name} in X: {yShip} and Y: {xShip}!\n");
                         }
                     }
                 }
-                brain!.PlayerPlacedShips(playerNum);
+                brain!.PlayerPlacedShips(player);
             }
 
             Console.WriteLine("\nYou have placed all ships!\n");
@@ -459,21 +483,9 @@ namespace BattleShipConsoleUI
 
         private void ErrorWrongPlayer()
         {
-            var brain = _brain;
-            var player = "";
-            if (brain?.GetPlayerNum() == 0)
-            {
-                player = "A";
-            }
-
-            if (brain?.GetPlayerNum() == 1)
-            {
-                player = "B";
-            }
-
             Console.WriteLine("=========| Error |=========");
             Console.WriteLine("It is not your Turn!");
-            Console.WriteLine($"It is Player {player} Turn!");
+            Console.WriteLine($"It is {_brain!.GetPlayer()} Turn!");
             Console.WriteLine("=============================================");
             Console.WriteLine("Press ENTER to continue");
         }

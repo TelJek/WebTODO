@@ -7,8 +7,7 @@ namespace BattleShipBrain
     // DTO - Data Transfer Object
     public class SaveGameDto
     {
-        public int SaveGameDtoId { get; set; }
-        public int CurrentPlayerNo { get; set; } = 0;
+        public EPlayer CurrentPlayer { get; set; } = EPlayer.NotDefined;
         public GameBoardDto[] GameBoards  { get; set; } = new GameBoardDto[4];
         
         public class GameBoardDto

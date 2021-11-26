@@ -9,7 +9,7 @@ namespace BattleShipBrain
     {
         private static string? _basePath;
 
-        private int _currentPlayerNo;
+        private EPlayer _currentPlayer = EPlayer.PlayerA;
         private readonly GameBoard[] _gameBoards = new GameBoard[4];
         private readonly GameConfig _gameConfig;
         private bool _playerAShipDone;
@@ -30,16 +30,37 @@ namespace BattleShipBrain
             _gameBoards[3].Board = new BoardSquareState[config.BoardSizeX, config.BoardSizeY];
         }
 
-        public void PlayerPlacedShips(int playerNum)
+        public void PlayerPlacedShips(EPlayer player)
         {
-            if (playerNum == 0) _playerAShipDone = true;
-            if (playerNum == 1) _playerBShipDone = true;
+            switch (player)
+            {
+                case EPlayer.PlayerA:
+                    _playerAShipDone = true;
+                    break;
+                case EPlayer.PlayerB:
+                    _playerBShipDone = true;
+                    break;
+                case EPlayer.NotDefined:
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(player), player, "Player ERROR in PlayerPlacedShips");
+            }
         }
 
-        public bool CheckPlayerPlacedShips(int playerNum)
+        public bool CheckPlayerPlacedShips(EPlayer player)
         {
-            if (playerNum == 0) return _playerAShipDone;
-            if (playerNum == 1) return _playerBShipDone;
+            switch (player)
+            {
+                case EPlayer.PlayerA:
+                    return _playerAShipDone;
+                case EPlayer.PlayerB:
+                    return _playerBShipDone;
+                case EPlayer.NotDefined:
+                    break;
+                default:
+                    return false;
+            }
+
             return false;
         }
 
@@ -58,22 +79,22 @@ namespace BattleShipBrain
             return _gameConfig;
         }
 
-        public int GetPlayerNum()
+        public EPlayer GetPlayer()
         {
-            return _currentPlayerNo;
+            return _currentPlayer;
         }
 
         public void ChangePlayerNum()
         {
-            if (_currentPlayerNo == 0)
-                _currentPlayerNo++;
+            if (_currentPlayer is EPlayer.PlayerA)
+                _currentPlayer = EPlayer.PlayerB;
             else
-                _currentPlayerNo--;
+                _currentPlayer = EPlayer.PlayerA;
         }
 
-        public BoardSquareState[,] GetBoard(int playerNo)
+        public BoardSquareState[,] GetBoard(int boardNumber)
         {
-            return CopyOfBoard(_gameBoards[playerNo].Board);
+            return CopyOfBoard(_gameBoards[boardNumber].Board);
         }
 
         private BoardSquareState[,] CopyOfBoard(BoardSquareState[,] board)
@@ -87,33 +108,47 @@ namespace BattleShipBrain
             return res;
         }
 
-        public void PutBomb(int x, int y, int player)
+        public void PutBomb(int x, int y, EPlayer player)
         {
-            // 0 to put a bomb on Player A board
-            // 1 to put a bomb on Player B board
             switch (player)
             {
-                case 0:
+                case EPlayer.PlayerA:
                     _gameBoards[0].Board[x, y].IsBomb = true;
                     _gameBoards[3].Board[x, y].IsBomb = true;
                     break;
-                case 1:
+                case EPlayer.PlayerB:
                     _gameBoards[1].Board[x, y].IsBomb = true;
                     _gameBoards[2].Board[x, y].IsBomb = true;
                     break;
             }
         }
 
-        public bool CheckIfCanPutShip(Ship shipToPut, int player)
+        public bool DidBombHit(int x, int y, EPlayer player)
+        {
+            switch (player)
+            {
+                case EPlayer.PlayerA:
+                    if (_gameBoards[0].Board[x, y].IsShip) return true;
+                    break;
+                case EPlayer.PlayerB:
+                    if (_gameBoards[2].Board[x, y].IsShip) return true;
+                    break;
+            }
+
+            return false;
+        }
+
+        public bool CheckIfCanPutShip(Ship shipToPut, EPlayer player)
         {
             var currentTouchRule = GetTouchRule();
             GameConfig config = _gameConfig;
-            if (player == 1) player = 2;
+            var integerForBoards= 0;
+            if (player is EPlayer.PlayerB) integerForBoards = 2;
 
             switch (currentTouchRule)
             {
                 case EShipTouchRule.NoTouch:
-                    if (_gameBoards[player].Ships is null) return true;
+                    if (_gameBoards[integerForBoards].Ships is null) return true;
                     foreach (var coordinate in shipToPut.GetCords()!)
                         for (var y = -1; y < 2; y++)
                         for (var x = -1; x < 2; x++)
@@ -128,14 +163,15 @@ namespace BattleShipBrain
                             if (coordinate.Y == 0) yForPlacing = 0;
 
 
-                            if (_gameBoards[player].Board[coordinate.X + xForPlacing, coordinate.Y + yForPlacing]
+                            if (_gameBoards[integerForBoards].Board[coordinate.X + xForPlacing, coordinate.Y + yForPlacing]
                                 .IsShip is true) return false;
                         }
                     // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
 
                     return true;
+
                 case EShipTouchRule.CornerTouch:
-                    if (_gameBoards[player].Ships is null) return true;
+                    if (_gameBoards[integerForBoards].Ships is null) return true;
                     foreach (var coordinate in shipToPut.GetCords()!)
                         for (var y = -1; y < 2; y++)
                         for (var x = -1; x < 2; x++)
@@ -151,16 +187,17 @@ namespace BattleShipBrain
 
                             if (yForPlacing == 1 || yForPlacing == -1) xForPlacing = 0;
 
-                            if (_gameBoards[player].Board[coordinate.X + xForPlacing, coordinate.Y + yForPlacing]
+                            if (_gameBoards[integerForBoards].Board[coordinate.X + xForPlacing, coordinate.Y + yForPlacing]
                                 .IsShip is true) return false;
                         }
                     // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
 
                     return true;
+
                 case EShipTouchRule.SideTouch:
-                    if (_gameBoards[player].Ships is null) return true;
+                    if (_gameBoards[integerForBoards].Ships is null) return true;
                     foreach (var coordinate in shipToPut.GetCords()!)
-                        if (_gameBoards[player].Board[coordinate.X, coordinate.Y].IsShip is true)
+                        if (_gameBoards[integerForBoards].Board[coordinate.X, coordinate.Y].IsShip is true)
                             return false;
                     // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
                     return true;
@@ -169,17 +206,16 @@ namespace BattleShipBrain
             return false;
         }
 
-        public bool PutShip(int player, Ship ship)
+        public bool PutShip(EPlayer player, Ship ship)
         {
             switch (player)
             {
-                case 0:
-                    List<Ship> shipsA = new();
+                case EPlayer.PlayerA:
                     if (CheckIfCanPutShip(ship, player))
                     {
                         if (_gameBoards[0].Ships is null)
                         {
-                            shipsA = new List<Ship>();
+                            List<Ship> shipsA = new List<Ship>();
                             shipsA.Add(ship);
                             _gameBoards[0].Ships = shipsA;
                             foreach (var coordinate in ship.GetCords()!)
@@ -199,7 +235,7 @@ namespace BattleShipBrain
                     // Ships is not placed, returning false, did not get True in CheckIfCanPutShip
                     return false;
 
-                case 1:
+                case EPlayer.PlayerB:
                     if (CheckIfCanPutShip(ship, player))
                     {
                         if (_gameBoards[2].Ships is null)
@@ -292,7 +328,7 @@ namespace BattleShipBrain
 
             var dto = new SaveGameDto();
             dto.SetGameBoards(_gameBoards);
-            dto.CurrentPlayerNo = _currentPlayerNo;
+            dto.CurrentPlayer = _currentPlayer;
             var jsonStr = JsonSerializer.Serialize(dto, jsonOptions);
             return jsonStr;
         }
@@ -330,7 +366,7 @@ namespace BattleShipBrain
                 counter++;
             }
 
-            _currentPlayerNo = dto.CurrentPlayerNo;
+            _currentPlayer = dto.CurrentPlayer;
         }
     }
 }
