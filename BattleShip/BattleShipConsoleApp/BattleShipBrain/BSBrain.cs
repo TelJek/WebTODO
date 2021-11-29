@@ -300,21 +300,45 @@ namespace BattleShipBrain
         }
 
 
-        private static string GetFileNameConfig(string configName)
+        private static string GetFileNameConfig(string? configName)
         {
-            var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Configs" +
-                                 Path.DirectorySeparatorChar + $"{configName}.json";
-            return fileNameConfig;
+            DirectoryInfo di = new(@$"{_basePath + Path.DirectorySeparatorChar + "Configs"}");
+            FileInfo[] files = di.GetFiles("*.json");
+
+            foreach (FileInfo file in files)
+            {
+                if (String.Equals(file.Name.Split(".")[0], configName, StringComparison.CurrentCultureIgnoreCase))
+                {
+ 
+                    var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Configs" + Path.DirectorySeparatorChar +
+                                         $"{file.Name.Split(".")[0].ToUpper()}.json";
+                    return fileNameConfig;
+                }
+            }
+
+            return "not found";
         }
 
         private static string GetFileNameSave(string saveName)
         {
-            var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Saves" +
-                                 Path.DirectorySeparatorChar + $"{saveName}.json";
-            return fileNameConfig;
+            DirectoryInfo di = new(@$"{_basePath + Path.DirectorySeparatorChar + "Saves"}");
+            FileInfo[] files = di.GetFiles("*.json");
+
+            foreach (FileInfo file in files)
+            {
+                if (String.Equals(file.Name.Split(".")[0], saveName, StringComparison.CurrentCultureIgnoreCase))
+                {
+ 
+                    var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Saves" + Path.DirectorySeparatorChar +
+                                         $"{file.Name.Split(".")[0]}.json";
+                    return fileNameConfig;
+                }
+            }
+
+            return "not found";
         }
 
-        public void SaveConfig(string configName, GameConfig config)
+        public void SaveConfig(string? configName, GameConfig config)
         {
             var fileNameStandardConfig = GetFileNameConfig(configName);
 
@@ -340,6 +364,57 @@ namespace BattleShipBrain
                 Console.WriteLine($"Saving {saveName}!");
                 File.WriteAllText(fileNameSave, saveJsonStr);
             }
+        }
+
+        public bool EditConfiguration(EDataType configType, string configOldName, string configNewName)
+        {
+            switch (configType)
+            {
+                case EDataType.Local:
+                    DirectoryInfo di = new(@$"{GetBasePath() + Path.DirectorySeparatorChar + "Configs"}");
+                    FileInfo[] files = di.GetFiles("*.json");
+
+                    var sourcePath = @$"{GetBasePath() 
+                                         + Path.DirectorySeparatorChar 
+                                         + "Configs" 
+                                         + Path.DirectorySeparatorChar 
+                                         + $"{configOldName}.json"}";
+            
+                    var newName = $"{configNewName}.json";
+                    foreach (FileInfo file in files)
+                    {
+                        if (file.Name.Split(".")[0].ToUpper() == configOldName.ToUpper())
+                        {
+                            var directory = Path.GetDirectoryName(sourcePath);
+                            var destinationPath = Path.Combine(directory, newName);
+                            File.Move(sourcePath, destinationPath);
+                            return true;
+                        }
+                    }
+                    break;
+            }
+            
+            return false;
+        }
+
+        public bool DeleteConfiguration(EDataType configType, string configName)
+        {
+            switch (configType)
+            {
+                case EDataType.Local:
+                    DirectoryInfo di = new(@$"{GetBasePath() + Path.DirectorySeparatorChar + "Configs"}");
+                    FileInfo[] files = di.GetFiles("*.json");
+
+                    var sourcePath = @$"{GetBasePath() 
+                                         + Path.DirectorySeparatorChar 
+                                         + "Configs" 
+                                         + Path.DirectorySeparatorChar 
+                                         + $"{configName}.json"}";
+                    File.Delete(sourcePath);
+                    return true;
+            }
+
+            return false;
         }
 
         public string GetBrainJson()

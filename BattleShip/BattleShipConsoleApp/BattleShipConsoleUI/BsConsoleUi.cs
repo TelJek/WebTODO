@@ -13,12 +13,12 @@ namespace BattleShipConsoleUI
     public class BsConsoleUi
     {
         private static BsBrain? _brain;
-        private readonly string _configName;
+        private readonly string? _configName;
         private readonly EDataType _configTypeData;
         private string _saveName = "NewGame";
         private EDataType _saveDataType = EDataType.Local;
 
-        public BsConsoleUi(BsBrain brain, string confName, EDataType confTypeData)
+        public BsConsoleUi(BsBrain brain, string? confName, EDataType confTypeData)
         {
             _brain = brain;
             _configName = confName;
@@ -62,9 +62,9 @@ namespace BattleShipConsoleUI
             mainMenu.Run();
         }
         
-        private List<string> ReturnDataNames()
+        private List<string?> ReturnDataNames()
         {
-            List<string> listWithHeaderDataNames = new()
+            List<string?> listWithHeaderDataNames = new()
             {
                 _brain!.GetPlayer().ToString(),
                 _configName,
@@ -114,7 +114,9 @@ namespace BattleShipConsoleUI
             var menu = new Menu(ReturnDataNames, ReturnDataTypes, "Configuration Settings", EMenuLevel.First);
             menu.AddMenuItems(new List<MenuItem>()
             {
-                new MenuItem("C1", "Create new configuration", CreateNewConfig)
+                new MenuItem("C1", "Create new configuration", CreateNewConfig),
+                new MenuItem("C2", "Edit configuration", EditConfig),
+                new MenuItem("C3", "Delete configuration", DeleteConfig)
             });
             var res = menu.Run();
             return res;
@@ -195,6 +197,20 @@ namespace BattleShipConsoleUI
             return "";
         }
         
+        private string EditConfig()
+        {
+            ConfigEditMenu();
+            Console.ReadLine();
+            return "";
+        }
+        
+        private string DeleteConfig()
+        {
+            ConfigDeleteMenu();
+            Console.ReadLine();
+            return "";
+        }
+        
         private string LoadNewSave()
         {
             LoadSave(); 
@@ -212,10 +228,15 @@ namespace BattleShipConsoleUI
         {
             var brain = _brain;
             Console.WriteLine("=========| Saving |=========");
-            Console.Write("Enter Save name: ");
-            var saveName = Console.ReadLine()?.Trim()!;
-            Console.Write("Saving format is: <SaveName> <Local,Db or Both>: ");
-            var savingType = Console.ReadLine()?.Trim().ToUpper();
+            var saveName = "";
+            var savingType = "";
+            while (saveName == "" || savingType == "")
+            {
+                Console.Write("Enter Save name: ");
+                saveName = Console.ReadLine()?.Trim()!;
+                Console.Write("Saving format is: <SaveName> <Local,Db or Both>: ");
+                savingType = Console.ReadLine()?.Trim().ToUpper(); 
+            }
             if (savingType is "LOCAL" or "BOTH")
             {
                 brain?.SaveGameState(saveName);
@@ -266,7 +287,7 @@ namespace BattleShipConsoleUI
             var saveName = Console.ReadLine()?.Trim();
             if (saveType != "" && saveName != "")
             {
-                _saveName = saveName!;
+                _saveName = saveName;
                 if (saveType == "LOCAL") _saveDataType = EDataType.Local;
                 if (saveType == "DB") _saveDataType = EDataType.DataBase;
                 if (_saveDataType is EDataType.Local)
@@ -277,7 +298,7 @@ namespace BattleShipConsoleUI
 
                 if (_saveDataType is EDataType.DataBase)
                 {
-                    var saveText = db.GameStateSaves.FirstOrDefault(s => s.SaveName == saveName);
+                    var saveText = db.GameStateSaves.FirstOrDefault(s => s.SaveName! == saveName!);
                     if (saveText != null)
                     {
                         var saveGameDto = JsonSerializer.Deserialize<SaveGameDto>(saveText.SavedGameStateJsnString) ?? throw new InvalidOperationException();
@@ -423,24 +444,162 @@ namespace BattleShipConsoleUI
             }
         }
 
+        public void ConfigEditMenu()
+        {
+            DisplayAllConfigs();
+            var inputDataConfigOldName = "";
+            var inputDataConfigNewName = "";
+            var configDataTypeStr = "";
+            while (configDataTypeStr == "" || inputDataConfigOldName == "")
+            {
+                Console.Write("Db or Local: ");
+                configDataTypeStr = Console.ReadLine()?.Trim().ToUpper();
+                Console.Write("Enter the name of configuration you want to edit: ");
+                inputDataConfigOldName = Console.ReadLine()?.Trim();
+                Console.Write("Enter a new name of configuration you want to edit: ");
+                inputDataConfigNewName = Console.ReadLine()?.Trim();
+                Console.WriteLine();
+            }
+
+            EDataType configDataType = EDataType.NotDefined;
+            if (configDataTypeStr == "DB") configDataType = EDataType.DataBase;
+            if (configDataTypeStr == "LOCAL") configDataType = EDataType.Local;
+            switch (configDataType)
+            {
+                case EDataType.Local:
+                {
+                    if (!_brain!.EditConfiguration(configDataType, inputDataConfigOldName, inputDataConfigNewName))
+                    {
+                        Console.WriteLine($"Local config with name {inputDataConfigOldName} was not found!");
+                    }
+                    Console.WriteLine($"Local config with name {inputDataConfigOldName} was renamed!");
+                    break;
+                }
+                case EDataType.DataBase:
+                {
+                    using var dbContext = new ApplicationDbContext();
+                    GameConfigSaved? dbConfigToRename = null;
+                    var canSave = false;
+                    foreach (var dbConfig in dbContext.GameConfigSaves)
+                    {
+                        if (dbConfig!.ConfigName!.ToUpper() == inputDataConfigOldName!.ToUpper())
+                        {
+                            dbConfigToRename = dbConfig;
+                            canSave = true;
+                        }
+                    }
+                    if (canSave)
+                    {
+                        if (dbConfigToRename is not null)
+                        {
+                            dbConfigToRename.ConfigName = inputDataConfigNewName;
+                            dbContext.SaveChanges();
+                            Console.WriteLine($"DataBase config with name {inputDataConfigOldName} was renamed!");
+                            return;
+                        }
+                    }
+                    Console.WriteLine($"DataBase config with name {inputDataConfigOldName} was not found!");
+                    break;
+                }
+            }
+        }
+
+        public void ConfigDeleteMenu()
+        {
+            DisplayAllConfigs();
+
+            var inputDataConfigOldName = "";
+            var configDataTypeStr = "";
+            while (configDataTypeStr == "" || inputDataConfigOldName == "")
+            {
+                Console.Write("Db or Local: ");
+                configDataTypeStr = Console.ReadLine()?.Trim().ToUpper();
+                Console.Write("Enter the name of configuration you want to delete: ");
+                inputDataConfigOldName = Console.ReadLine()?.Trim();
+                Console.WriteLine();
+            }
+
+            EDataType configDataType = EDataType.NotDefined;
+            if (configDataTypeStr == "DB") configDataType = EDataType.DataBase;
+            if (configDataTypeStr == "LOCAL") configDataType = EDataType.Local;
+            switch (configDataType)
+            {
+                case EDataType.Local:
+                {
+                    if (!_brain!.DeleteConfiguration(configDataType, inputDataConfigOldName))
+                    {
+                        Console.WriteLine($"Local config with name {inputDataConfigOldName} was not found!");
+                    }
+
+                    Console.WriteLine($"Local config with name {inputDataConfigOldName} was deleted!");
+                    break;
+                }
+                case EDataType.DataBase:
+                {
+                    using var dbContext = new ApplicationDbContext();
+                    GameConfigSaved? dbConfigToRename = null;
+                    var canSave = false;
+                    foreach (var dbConfig in dbContext.GameConfigSaves)
+                    {
+                        if (dbConfig!.ConfigName!.ToUpper() == inputDataConfigOldName!.ToUpper())
+                        {
+                            dbConfigToRename = dbConfig;
+                            canSave = true;
+                        }
+                    }
+                    Console.WriteLine($"DataBase config with name {inputDataConfigOldName} was not found!");
+                    break;
+                }
+            }
+        }
+
+        public void DisplayAllConfigs()
+        {
+            DirectoryInfo di = new(@$"{_brain!.GetBasePath() + Path.DirectorySeparatorChar + "Configs"}");
+            FileInfo[] files = di.GetFiles("*.json");
+            Console.WriteLine("=========| Edit Configuration |=========\n");
+            Console.WriteLine("=========| Edit Local Configuration |=========\n");
+            Console.WriteLine();
+            foreach (FileInfo file in files) Console.WriteLine(file.Name.Split(".")[0]);
+            Console.WriteLine();
+            Console.WriteLine("=========| Edit DB Configuration |=========");
+            Console.WriteLine();
+            using var db = new ApplicationDbContext();
+            foreach (var dbConfig in db.GameConfigSaves) Console.WriteLine(dbConfig!.ConfigName);
+            db.Dispose();
+            Console.WriteLine();
+            Console.WriteLine("=============================================");
+        }
+        
         public void ConfigMenu()
         {
             var brain = _brain;
             Console.WriteLine("=========| New Configuration |=========\n");
-            Console.Write("Enter a Configuration name: ");
-            var configName = Console.ReadLine()?.Trim()!;
-            Console.Write("<Local, Db or Both>: ");
-            var savingType = Console.ReadLine()?.Trim().ToUpper();
-            Console.Write("Choose Board Size X: ");
-            var boardSizeX = int.Parse(Console.ReadLine()?.Trim()!);
-            Console.Write("Choose Board Size Y: ");
-            var boardSizeY = int.Parse(Console.ReadLine()?.Trim()!);
-            Console.Write("Choose Ship Touch Rule (NoTouch or CornerTouch or SideTouch) : ");
-            var touchRuleInput = Console.ReadLine()?.Trim()!;
-            var newTouchRule = NewTouchRule(touchRuleInput);
-            Console.Write("Create New Ships (Enter a number how much to create): ");
+            var configName = "";
+            var savingType = "";
+            var touchRuleInput = "";
+            var boardSizeX = 0;
+            var boardSizeY = 0;
+            var howMuch = 0;
+            var newTouchRule = EShipTouchRule.NotDefined;
+            while (configName == "" || savingType == "" || touchRuleInput == "" || boardSizeX == 0 || boardSizeY == 0 || howMuch == 0)
+            {
+                Console.Write("Enter a Configuration name: ");
+                configName = Console.ReadLine()?.Trim()!;
+                Console.Write("<Local, Db or Both>: ");
+                savingType = Console.ReadLine()?.Trim().ToUpper();
+                Console.Write("Choose Board Size X: ");
+                boardSizeX = int.Parse(Console.ReadLine()?.Trim()!);
+                Console.Write("Choose Board Size Y: ");
+                boardSizeY = int.Parse(Console.ReadLine()?.Trim()!);
+                Console.Write("Choose Ship Touch Rule (NoTouch or CornerTouch or SideTouch) : ");
+                touchRuleInput = Console.ReadLine()?.Trim()!;
+                newTouchRule = NewTouchRule(touchRuleInput);
+                Console.Write("Create New Ships (Enter a number how much to create): ");
+                howMuch = int.Parse(Console.ReadLine()?.Trim()!);  
+            }
+            
             var shipsConfig = new List<ShipConfig>();
-            var howMuch = int.Parse(Console.ReadLine()?.Trim()!);
             for (int x = 0; x != howMuch; x++)
             {
                 shipsConfig.Add(NewShipConfig());

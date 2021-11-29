@@ -14,7 +14,7 @@ namespace DAL
     private static string ConnectionString =
         "Server=barrel.itcollege.ee;User Id=student;Password=Student.Pass.1;Database=student_arljub_battleship;MultipleActiveResultSets=true";
     
-    public DbSet<GameConfigSaved> GameConfigSaves { get; set; } = default!;
+    public DbSet<GameConfigSaved?> GameConfigSaves { get; set; } = default!;
     public DbSet<GameStateSaved> GameStateSaves { get; set; } = default!;
 
     // not recommended - do not hardcode DB conf!

@@ -12,6 +12,7 @@ namespace BattleShipConsoleApp
     {
         private static string? _basePath;
         private static readonly GameConfig Config = new();
+        private static string? _loadedGameConfidName = "";
 
         private static void Main(string[] args)
         {
@@ -33,7 +34,7 @@ namespace BattleShipConsoleApp
             Console.WriteLine("=========| Load DB Configuration |=========");
             Console.WriteLine();
             using var db = new ApplicationDbContext();
-            foreach (var dbConfig in db.GameConfigSaves) Console.WriteLine(dbConfig.ConfigName);
+            foreach (var dbConfig in db.GameConfigSaves) Console.WriteLine(dbConfig!.ConfigName);
             Console.WriteLine();
             Console.WriteLine("=============================================");
             var inputDataStr = "";
@@ -56,9 +57,21 @@ namespace BattleShipConsoleApp
 
         private static string GetFileNameConfig(string configName)
         {
-            var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Configs" + Path.DirectorySeparatorChar +
-                                 $"{configName}.json";
-            return fileNameConfig;
+            DirectoryInfo di = new(@$"{_basePath + Path.DirectorySeparatorChar + "Configs"}");
+            FileInfo[] files = di.GetFiles("*.json");
+
+            foreach (FileInfo file in files)
+            {
+                if (file.Name.Split(".")[0].ToUpper() == configName.ToUpper())
+                {
+ 
+                    var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Configs" + Path.DirectorySeparatorChar +
+                                         $"{configName}.json";
+                    return fileNameConfig;
+                }
+            }
+
+            return "not found";
         }
 
         private static string GetConfJsonStr(GameConfig config)
@@ -102,7 +115,9 @@ namespace BattleShipConsoleApp
             if (loadFromDataType is EDataType.DataBase)
             {
                 using var db = new ApplicationDbContext();
-                var confText = db.GameConfigSaves.FirstOrDefault(c => c.ConfigName == configName);
+                var confText =
+                    db.GameConfigSaves.FirstOrDefault(c => c!.ConfigName!.ToUpper() == configName.ToUpper());
+                _loadedGameConfidName = confText!.ConfigName;
                 if (confText != null)
                     config = JsonSerializer.Deserialize<GameConfig>(confText.GameConfigJsnString) ??
                              throw new InvalidOperationException();
@@ -114,7 +129,7 @@ namespace BattleShipConsoleApp
         private static void StartProgram(string config, EDataType type)
         {
             BsBrain brain = new(LoadNewConfig(config, type), _basePath!);
-            BsConsoleUi console = new(brain, config, type);
+            BsConsoleUi console = new(brain, _loadedGameConfidName, type);
             console.DrawConsoleUi();
             // console.DrawUi("main");
         }
