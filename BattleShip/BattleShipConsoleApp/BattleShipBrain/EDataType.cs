@@ -1,9 +1,9 @@
-namespace BattleShipBrain
+﻿namespace BattleShipBrain
 {
     public enum EDataType
     {
         NotDefined,
-        Local,
-        DataBase
+        Configuration, 
+        Save
     }
 }

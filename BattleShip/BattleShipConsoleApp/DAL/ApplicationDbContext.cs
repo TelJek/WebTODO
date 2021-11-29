@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using BattleShipBrain;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
 namespace DAL
@@ -22,8 +23,7 @@ namespace DAL
     {
         optionsBuilder.UseSqlServer(ConnectionString);
     }
-    
-    
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -37,5 +37,24 @@ namespace DAL
             relationship.DeleteBehavior = DeleteBehavior.Restrict;
         }
     }
+
+    public bool DeleteFromDbByName(string NameToDelete, string table, string columnName)
+    {
+        var db = this;
+
+        using (SqlConnection con = new SqlConnection(ConnectionString))
+        {
+            con.Open();
+            using (SqlCommand command = new SqlCommand("DELETE FROM " + table + " WHERE " + columnName + " = '" + NameToDelete+"'", con))
+            {
+                command.ExecuteNonQuery();
+            }
+            con.Close();
+        }
+        
+        return false;
     }
+    
+    }
+    
 }

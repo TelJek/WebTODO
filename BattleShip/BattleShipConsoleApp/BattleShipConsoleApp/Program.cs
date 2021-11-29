@@ -48,10 +48,10 @@ namespace BattleShipConsoleApp
                 Console.WriteLine();
             }
 
-            EDataType configDataType = EDataType.NotDefined;
-            if (configDataTypeStr == "DB") configDataType = EDataType.DataBase;
-            if (configDataTypeStr == "LOCAL") configDataType = EDataType.Local;
-            StartProgram(inputDataStr!, configDataType);
+            EDataLocationType configDataLocationType = EDataLocationType.NotDefined;
+            if (configDataTypeStr == "DB") configDataLocationType = EDataLocationType.DataBase;
+            if (configDataTypeStr == "LOCAL") configDataLocationType = EDataLocationType.Local;
+            StartProgram(inputDataStr!, configDataLocationType);
             
         }
 
@@ -100,11 +100,11 @@ namespace BattleShipConsoleApp
             }
         }
 
-        private static GameConfig LoadNewConfig(string configName, EDataType loadFromDataType)
+        private static GameConfig LoadNewConfig(string configName, EDataLocationType loadFromDataLocationType)
         {
             GameConfig config = new();
             var fileNameStandardConfig = GetFileNameConfig(configName);
-            if (loadFromDataType is EDataType.Local)
+            if (loadFromDataLocationType is EDataLocationType.Local)
                 if (File.Exists(fileNameStandardConfig))
                 {
                     Console.WriteLine("Loading config...");
@@ -112,7 +112,7 @@ namespace BattleShipConsoleApp
                     config = JsonSerializer.Deserialize<GameConfig>(confText) ?? throw new InvalidOperationException();
                 }
 
-            if (loadFromDataType is EDataType.DataBase)
+            if (loadFromDataLocationType is EDataLocationType.DataBase)
             {
                 using var db = new ApplicationDbContext();
                 var confText =
@@ -126,10 +126,10 @@ namespace BattleShipConsoleApp
             return config;
         }
         
-        private static void StartProgram(string config, EDataType type)
+        private static void StartProgram(string config, EDataLocationType locationType)
         {
-            BsBrain brain = new(LoadNewConfig(config, type), _basePath!);
-            BsConsoleUi console = new(brain, _loadedGameConfidName, type);
+            BsBrain brain = new(LoadNewConfig(config, locationType), _basePath!);
+            BsConsoleUi console = new(brain, _loadedGameConfidName, locationType);
             console.DrawConsoleUi();
             // console.DrawUi("main");
         }

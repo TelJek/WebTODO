@@ -366,11 +366,11 @@ namespace BattleShipBrain
             }
         }
 
-        public bool EditConfiguration(EDataType configType, string configOldName, string configNewName)
+        public bool EditConfiguration(EDataLocationType configLocationType, string configOldName, string configNewName)
         {
-            switch (configType)
+            switch (configLocationType)
             {
-                case EDataType.Local:
+                case EDataLocationType.Local:
                     DirectoryInfo di = new(@$"{GetBasePath() + Path.DirectorySeparatorChar + "Configs"}");
                     FileInfo[] files = di.GetFiles("*.json");
 
@@ -397,11 +397,11 @@ namespace BattleShipBrain
             return false;
         }
 
-        public bool DeleteConfiguration(EDataType configType, string configName)
+        public bool DeleteConfiguration(EDataLocationType configLocationType, string configName)
         {
-            switch (configType)
+            switch (configLocationType)
             {
-                case EDataType.Local:
+                case EDataLocationType.Local:
                     DirectoryInfo di = new(@$"{GetBasePath() + Path.DirectorySeparatorChar + "Configs"}");
                     FileInfo[] files = di.GetFiles("*.json");
 
@@ -417,6 +417,26 @@ namespace BattleShipBrain
             return false;
         }
 
+        public bool DeleteSave(EDataLocationType saveLocationType, string saveName)
+        {
+            switch (saveLocationType)
+            {
+                case EDataLocationType.Local:
+                    DirectoryInfo di = new(@$"{GetBasePath() + Path.DirectorySeparatorChar + "Saves"}");
+                    FileInfo[] files = di.GetFiles("*.json");
+
+                    var sourcePath = @$"{GetBasePath() 
+                                         + Path.DirectorySeparatorChar 
+                                         + "Saves" 
+                                         + Path.DirectorySeparatorChar 
+                                         + $"{saveName}.json"}";
+                    File.Delete(sourcePath);
+                    return true;
+            }
+
+            return false;
+        }
+        
         public string GetBrainJson()
         {
             var jsonOptions = new JsonSerializerOptions

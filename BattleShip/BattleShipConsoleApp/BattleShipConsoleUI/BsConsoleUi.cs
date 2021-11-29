@@ -14,15 +14,15 @@ namespace BattleShipConsoleUI
     {
         private static BsBrain? _brain;
         private readonly string? _configName;
-        private readonly EDataType _configTypeData;
+        private readonly EDataLocationType _configLocationTypeDataLocation;
         private string _saveName = "NewGame";
-        private EDataType _saveDataType = EDataType.Local;
+        private EDataLocationType _saveDataLocationType = EDataLocationType.Local;
 
-        public BsConsoleUi(BsBrain brain, string? confName, EDataType confTypeData)
+        public BsConsoleUi(BsBrain brain, string? confName, EDataLocationType confLocationTypeDataLocation)
         {
             _brain = brain;
             _configName = confName;
-            _configTypeData = confTypeData;
+            _configLocationTypeDataLocation = confLocationTypeDataLocation;
         }
 
         public static void DrawBoard(BoardSquareState[,] board)
@@ -73,12 +73,12 @@ namespace BattleShipConsoleUI
             return listWithHeaderDataNames;
         }
         
-        private List<EDataType> ReturnDataTypes()
+        private List<EDataLocationType> ReturnDataTypes()
         {
-            List<EDataType> listWithHeaderDataTypes = new()
+            List<EDataLocationType> listWithHeaderDataTypes = new()
             {
-                _configTypeData,
-                _saveDataType
+                _configLocationTypeDataLocation,
+                _saveDataLocationType
             };
             return listWithHeaderDataTypes;
         }
@@ -128,7 +128,8 @@ namespace BattleShipConsoleUI
             menu.AddMenuItems(new List<MenuItem>()
             {
                 new MenuItem("S1", "Save game", SaveGame),
-                new MenuItem("S2", "Load game", LoadNewSave)
+                new MenuItem("S2", "Load game", LoadNewSave),
+                new MenuItem("S3", "Delete saved game", DeleteSave)
             });
             var res = menu.Run();
             return res;
@@ -223,6 +224,12 @@ namespace BattleShipConsoleUI
             Console.ReadLine();
             return "";
         }
+        
+        private string DeleteSave()
+        {
+            SaveDeleteMenu();
+            return "";
+        }
 
         public void CreateSave()
         {
@@ -288,15 +295,15 @@ namespace BattleShipConsoleUI
             if (saveType != "" && saveName != "")
             {
                 _saveName = saveName;
-                if (saveType == "LOCAL") _saveDataType = EDataType.Local;
-                if (saveType == "DB") _saveDataType = EDataType.DataBase;
-                if (_saveDataType is EDataType.Local)
+                if (saveType == "LOCAL") _saveDataLocationType = EDataLocationType.Local;
+                if (saveType == "DB") _saveDataLocationType = EDataLocationType.DataBase;
+                if (_saveDataLocationType is EDataLocationType.Local)
                 {
                     var saveGameDto = brain?.RestoreBrainFromJson(saveName);
                     brain?.LoadNewGameDto(saveGameDto);
                 }
 
-                if (_saveDataType is EDataType.DataBase)
+                if (_saveDataLocationType is EDataLocationType.DataBase)
                 {
                     var saveText = db.GameStateSaves.FirstOrDefault(s => s.SaveName! == saveName!);
                     if (saveText != null)
@@ -446,7 +453,7 @@ namespace BattleShipConsoleUI
 
         public void ConfigEditMenu()
         {
-            DisplayAllConfigs();
+            DisplayDataByType(EDataType.Configuration);
             var inputDataConfigOldName = "";
             var inputDataConfigNewName = "";
             var configDataTypeStr = "";
@@ -461,21 +468,21 @@ namespace BattleShipConsoleUI
                 Console.WriteLine();
             }
 
-            EDataType configDataType = EDataType.NotDefined;
-            if (configDataTypeStr == "DB") configDataType = EDataType.DataBase;
-            if (configDataTypeStr == "LOCAL") configDataType = EDataType.Local;
-            switch (configDataType)
+            EDataLocationType configDataLocationType = EDataLocationType.NotDefined;
+            if (configDataTypeStr == "DB") configDataLocationType = EDataLocationType.DataBase;
+            if (configDataTypeStr == "LOCAL") configDataLocationType = EDataLocationType.Local;
+            switch (configDataLocationType)
             {
-                case EDataType.Local:
+                case EDataLocationType.Local:
                 {
-                    if (!_brain!.EditConfiguration(configDataType, inputDataConfigOldName, inputDataConfigNewName))
+                    if (!_brain!.EditConfiguration(configDataLocationType, inputDataConfigOldName, inputDataConfigNewName))
                     {
                         Console.WriteLine($"Local config with name {inputDataConfigOldName} was not found!");
                     }
                     Console.WriteLine($"Local config with name {inputDataConfigOldName} was renamed!");
                     break;
                 }
-                case EDataType.DataBase:
+                case EDataLocationType.DataBase:
                 {
                     using var dbContext = new ApplicationDbContext();
                     GameConfigSaved? dbConfigToRename = null;
@@ -506,71 +513,125 @@ namespace BattleShipConsoleUI
 
         public void ConfigDeleteMenu()
         {
-            DisplayAllConfigs();
+            DisplayDataByType(EDataType.Configuration);
 
-            var inputDataConfigOldName = "";
+            var inputConfigNameToDelete = "";
             var configDataTypeStr = "";
-            while (configDataTypeStr == "" || inputDataConfigOldName == "")
+            while (configDataTypeStr == "" || inputConfigNameToDelete == "")
             {
                 Console.Write("Db or Local: ");
                 configDataTypeStr = Console.ReadLine()?.Trim().ToUpper();
                 Console.Write("Enter the name of configuration you want to delete: ");
-                inputDataConfigOldName = Console.ReadLine()?.Trim();
+                inputConfigNameToDelete = Console.ReadLine()?.Trim();
                 Console.WriteLine();
             }
 
-            EDataType configDataType = EDataType.NotDefined;
-            if (configDataTypeStr == "DB") configDataType = EDataType.DataBase;
-            if (configDataTypeStr == "LOCAL") configDataType = EDataType.Local;
-            switch (configDataType)
+            EDataLocationType configDataLocationType = EDataLocationType.NotDefined;
+            if (configDataTypeStr == "DB") configDataLocationType = EDataLocationType.DataBase;
+            if (configDataTypeStr == "LOCAL") configDataLocationType = EDataLocationType.Local;
+            switch (configDataLocationType)
             {
-                case EDataType.Local:
+                case EDataLocationType.Local:
                 {
-                    if (!_brain!.DeleteConfiguration(configDataType, inputDataConfigOldName))
+                    if (!_brain!.DeleteConfiguration(configDataLocationType, inputConfigNameToDelete))
                     {
-                        Console.WriteLine($"Local config with name {inputDataConfigOldName} was not found!");
+                        Console.WriteLine($"Local config with name {inputConfigNameToDelete} was not found!");
                     }
 
-                    Console.WriteLine($"Local config with name {inputDataConfigOldName} was deleted!");
+                    Console.WriteLine($"Local config with name {inputConfigNameToDelete} was deleted!");
                     break;
                 }
-                case EDataType.DataBase:
+                case EDataLocationType.DataBase:
                 {
                     using var dbContext = new ApplicationDbContext();
-                    GameConfigSaved? dbConfigToRename = null;
-                    var canSave = false;
-                    foreach (var dbConfig in dbContext.GameConfigSaves)
+                    if (!dbContext.DeleteFromDbByName(inputConfigNameToDelete, "GameConfigSaves", "ConfigName"))
                     {
-                        if (dbConfig!.ConfigName!.ToUpper() == inputDataConfigOldName!.ToUpper())
-                        {
-                            dbConfigToRename = dbConfig;
-                            canSave = true;
-                        }
+                        Console.WriteLine($"DataBase config with name {inputConfigNameToDelete} was not found!");
                     }
-                    Console.WriteLine($"DataBase config with name {inputDataConfigOldName} was not found!");
                     break;
                 }
             }
         }
 
-        public void DisplayAllConfigs()
+        public void SaveDeleteMenu()
         {
-            DirectoryInfo di = new(@$"{_brain!.GetBasePath() + Path.DirectorySeparatorChar + "Configs"}");
-            FileInfo[] files = di.GetFiles("*.json");
-            Console.WriteLine("=========| Edit Configuration |=========\n");
-            Console.WriteLine("=========| Edit Local Configuration |=========\n");
-            Console.WriteLine();
-            foreach (FileInfo file in files) Console.WriteLine(file.Name.Split(".")[0]);
-            Console.WriteLine();
-            Console.WriteLine("=========| Edit DB Configuration |=========");
-            Console.WriteLine();
+            DisplayDataByType(EDataType.Save);
+
+            var inputSaveNameToDelete = "";
+            var configDataTypeStr = "";
+            while (configDataTypeStr == "" || inputSaveNameToDelete == "")
+            {
+                Console.Write("Db or Local: ");
+                configDataTypeStr = Console.ReadLine()?.Trim().ToUpper();
+                Console.Write("Enter the name of save you want to delete: ");
+                inputSaveNameToDelete = Console.ReadLine()?.Trim();
+                Console.WriteLine();
+            }
+
+            EDataLocationType saveDataLocationType = EDataLocationType.NotDefined;
+            if (configDataTypeStr == "DB") saveDataLocationType = EDataLocationType.DataBase;
+            if (configDataTypeStr == "LOCAL") saveDataLocationType = EDataLocationType.Local;
+            switch (saveDataLocationType)
+            {
+                case EDataLocationType.Local:
+                {
+                    if (!_brain!.DeleteSave(saveDataLocationType, inputSaveNameToDelete))
+                    {
+                        Console.WriteLine($"Local save with name {inputSaveNameToDelete} was not found!");
+                    }
+
+                    Console.WriteLine($"Local save with name {inputSaveNameToDelete} was deleted!");
+                    break;
+                }
+                case EDataLocationType.DataBase:
+                {
+                    using var dbContext = new ApplicationDbContext();
+                    if (!dbContext.DeleteFromDbByName(inputSaveNameToDelete, "GameStateSaves", "SaveName"))
+                    {
+                        Console.WriteLine($"DataBase save with name {inputSaveNameToDelete} was not found!");
+                    }
+                    break;
+                }
+            }
+        }
+
+        public void DisplayDataByType(EDataType dataToDisplay)
+        {
             using var db = new ApplicationDbContext();
-            foreach (var dbConfig in db.GameConfigSaves) Console.WriteLine(dbConfig!.ConfigName);
+
+            if (dataToDisplay is EDataType.Configuration)
+            {
+                DirectoryInfo configsDirectory = new(@$"{_brain!.GetBasePath() + Path.DirectorySeparatorChar + "Configs"}");
+                FileInfo[] files = configsDirectory.GetFiles("*.json");
+                Console.WriteLine("=========| Configurations |=========\n");
+                Console.WriteLine("=========| Local Configurations |=========\n");
+                Console.WriteLine();
+                foreach (FileInfo file in files) Console.WriteLine(file.Name.Split(".")[0]);
+                Console.WriteLine();
+                Console.WriteLine("=========| DB Configurations |=========");
+                Console.WriteLine();
+                foreach (var dbConfig in db.GameConfigSaves) Console.WriteLine(dbConfig!.ConfigName); 
+            }
+
+            if (dataToDisplay is EDataType.Save)
+            {
+                DirectoryInfo savesDirectory = new(@$"{_brain!.GetBasePath() + Path.DirectorySeparatorChar + "Saves"}");
+                FileInfo[] files = savesDirectory.GetFiles("*.json");
+                Console.WriteLine("=========| Saves |=========\n");
+                Console.WriteLine("=========| Local Saves |=========\n");
+                Console.WriteLine();
+                foreach (FileInfo file in files) Console.WriteLine(file.Name.Split(".")[0]);
+                Console.WriteLine();
+                Console.WriteLine("=========| DB Saves |=========");
+                Console.WriteLine();
+                foreach (var dbConfig in db.GameStateSaves) Console.WriteLine(dbConfig!.SaveName); 
+            }
+
             db.Dispose();
             Console.WriteLine();
             Console.WriteLine("=============================================");
         }
-        
+
         public void ConfigMenu()
         {
             var brain = _brain;

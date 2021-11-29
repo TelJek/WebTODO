@@ -21,9 +21,9 @@ namespace BattleShipConsoleUI
         private readonly string _title;
 
         private readonly Func<List<string>> _getNamesForHeaderInfoString;
-        private readonly Func<List<EDataType>> _getDataTypesForHeaderInfoString;
+        private readonly Func<List<EDataLocationType>> _getDataTypesForHeaderInfoString;
 
-        public Menu(Func<List<string>> getNamesForHeaderInfoString, Func<List<EDataType>> getDataTypesForHeaderInfoString, string title, EMenuLevel menuLevel)
+        public Menu(Func<List<string>> getNamesForHeaderInfoString, Func<List<EDataLocationType>> getDataTypesForHeaderInfoString, string title, EMenuLevel menuLevel)
         {
             _getNamesForHeaderInfoString = getNamesForHeaderInfoString;
             _title = title;
