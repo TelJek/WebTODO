@@ -668,7 +668,7 @@ namespace BattleShipConsoleUI
 
             if (savingType is "LOCAL" or "BOTH")
             {
-                brain?.SaveConfig(configName,
+                brain?.SaveConfigLocal(configName,
                     new GameConfig()
                     {
                         BoardSizeX = boardSizeX, BoardSizeY = boardSizeY, EShipTouchRule = newTouchRule,

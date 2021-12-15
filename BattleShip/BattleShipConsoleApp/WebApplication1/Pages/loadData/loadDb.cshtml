@@ -1,0 +1,38 @@
+﻿@page
+@using WebApplication1.DAL
+@model WebApplication1.Pages.loadData.loadDb
+
+@{
+    ViewData["Title"] = "LoadConfiguration";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-center">
+    <div class="d-flex flex-column bd-highlight mb-3">
+        <div class="p-2 bd-highlight">
+            <div class="text-center">
+                <h1 class="display-10">Select Configuration!</h1>
+            </div>
+        </div>
+        <div class="p-2 bd-highlight">
+            <div class="d-flex justify-content-center">
+                <div class="d-flex flex-row bd-highlight mb-3">
+                    <div class="p-2 bd-highlight">
+                        <form method="post">
+                            <div class="form-floating ">
+                                <select class="form-control" id="inputDbConfigName" name="inputDbConfigName">
+                                    @foreach (var item in AccessData.GetDataFromDb())
+                                    {
+                                        <option>@Html.DisplayFor(modelItem => item.ConfigName)</option>
+                                    }
+                                </select>
+                                <label for="inputDbConfigName">Choose Configuration to load!</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Start Game from Existing Configuration in Database</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

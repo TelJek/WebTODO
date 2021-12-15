@@ -9,11 +9,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{92F71FD2-CE26-446B-AD45-07EABC341650}"
 ProjectSection(SolutionItems) = preProject
 	Directory.Build.props = Directory.Build.props
+	README.md = README.md
 EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL", "DAL\DAL.csproj", "{805218ED-40B0-4450-8742-2BDE5798A6BC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebBattleShip", "WebBattleShip\WebBattleShip.csproj", "{9D7A010D-C955-484D-B0C2-C1C687D550D9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebApplication1", "WebApplication1\WebApplication1.csproj", "{393C7118-80DE-47D7-A479-2BCBA510D3CD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,9 +38,9 @@ Global
 		{805218ED-40B0-4450-8742-2BDE5798A6BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{805218ED-40B0-4450-8742-2BDE5798A6BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{805218ED-40B0-4450-8742-2BDE5798A6BC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9D7A010D-C955-484D-B0C2-C1C687D550D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9D7A010D-C955-484D-B0C2-C1C687D550D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9D7A010D-C955-484D-B0C2-C1C687D550D9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9D7A010D-C955-484D-B0C2-C1C687D550D9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{393C7118-80DE-47D7-A479-2BCBA510D3CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{393C7118-80DE-47D7-A479-2BCBA510D3CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{393C7118-80DE-47D7-A479-2BCBA510D3CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{393C7118-80DE-47D7-A479-2BCBA510D3CD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

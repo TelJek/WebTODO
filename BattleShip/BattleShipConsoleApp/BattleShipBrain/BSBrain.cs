@@ -338,7 +338,7 @@ namespace BattleShipBrain
             return "not found";
         }
 
-        public void SaveConfig(string? configName, GameConfig config)
+        public void SaveConfigLocal(string? configName, GameConfig config)
         {
             var fileNameStandardConfig = GetFileNameConfig(configName);
 

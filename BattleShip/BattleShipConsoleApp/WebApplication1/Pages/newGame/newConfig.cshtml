@@ -1,0 +1,150 @@
+﻿@page
+@using BattleShipBrain
+@model WebApplication1.Pages.newGame.newConfig
+
+@{
+    ViewData["Title"] = "LoadConfiguration";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-center">
+    <div class="d-flex flex-column bd-highlight mb-3">
+        <div class="p-2 bd-highlight">
+            <div class="text-center">
+                <h1 class="display-10">Make a New Configuration!</h1>
+            </div>
+        </div>
+        <form method="post">
+            <div class="d-flex justify-content-center">
+                <div class="d-flex flex-row bd-highlight">
+                    <div class="p-3 bd-highlight row-cols-lg-auto">
+                        <div class="form-floating">
+                            @if (Model.TempConfigHolder is not null)
+                            {
+                                <input class="form-control" id="inputConfigName" name="inputConfigName" placeholder="Configuration name" value="@Model.TempConfigHolder.ConfigName"/>
+                            }
+                            else
+                            {
+                                <input class="form-control" id="inputConfigName" name="inputConfigName" placeholder="Configuration name"/>
+                            }
+                            <label for="inputConfigName">Configuration name</label>
+                        </div>
+                        <div class="form-floating">
+                            @if (Model.TempConfigHolder is not null)
+                            {
+                                <input class="form-control" id="inputBoardSizeX" name="inputBoardSizeX" placeholder="Choose Board Size X" value="@Model.TempConfigHolder.BoardSizeX">
+                            }
+                            else
+                            {
+                                <input class="form-control" id="inputBoardSizeX" name="inputBoardSizeX" placeholder="Choose Board Size X">
+                            }
+                            <label for="inputBoardSizeX">Choose Board Size X</label>
+                        </div>
+                        <div class="form-floating">
+                            @if (Model.TempConfigHolder is not null)
+                            {
+                                <input class="form-control" id="inputBoardSizeY" name="inputBoardSizeY" placeholder="Choose Board Size Y" value="@Model.TempConfigHolder.BoardSizeY">
+                            }
+                            else
+                            {
+                                <input class="form-control" id="inputBoardSizeY" name="inputBoardSizeY" placeholder="Choose Board Size Y">
+                            }
+                            <label for="inputBoardSizeY">Choose Board Size Y</label>
+                        </div>
+                        <div class="form-floating ">
+                            <select class="form-control" id="inputTouchRule" name="inputTouchRule">
+                                @if (Model.TempConfigHolder is not null && Model.TempConfigHolder.EShipTouchRule == EShipTouchRule.CornerTouch)
+                                {
+                                    <option value="CornerTouch">CornerTouch</option>
+                                    <option value="NoTouch">NoTouch</option>
+                                    <option value="SideTouch">SideTouch</option>
+                                }
+                                else if (Model.TempConfigHolder is not null && Model.TempConfigHolder!.EShipTouchRule == EShipTouchRule.SideTouch)
+                                {
+                                    <option value="SideTouch">SideTouch</option>
+                                    <option value="NoTouch">NoTouch</option>
+                                    <option value="CornerTouch">CornerTouch</option>
+                                }
+                                else
+                                {
+                                    <option value="NoTouch">NoTouch</option>
+                                    <option value="CornerTouch">CornerTouch</option>
+                                    <option value="SideTouch">SideTouch</option>
+                                }
+                            </select>
+                            <label for="inputTouchRule">Choose Ship Touch Rule</label>
+                        </div>
+                        <div class="form-floating">
+                            @if (Model.TempConfigHolder is not null)
+                            {
+                                <input class="form-control" id="inputShipQuantity" name="inputShipQuantity" placeholder="Ships to create" value="@Model.TempConfigHolder.ShipsToCreate">
+                            }
+                            else
+                            {
+                                <input class="form-control" id="inputShipQuantity" name="inputShipQuantity" placeholder="Ships to create">
+                            }
+                            <label for="inputShipQuantity">Ships to create</label>
+                        </div>
+                        <div class="form-group form-check">
+                            @if (Model.TempConfigHolder is not null && Model.TempConfigHolder.WhereToSave.Equals("db"))
+                            {
+                                <input type="checkbox" class="form-check-input" id="checkForBb" name="checkForBb" checked="checked">
+                            }
+                            else
+                            {
+                                <input type="checkbox" class="form-check-input" id="checkForBb" name="checkForBb">
+                            }
+                            <label class="form-check-label" for="checkForBb">Save in DB</label>
+                        </div>
+                        <div class="form-group form-check">
+                            @if (Model.TempConfigHolder is not null && Model.TempConfigHolder.WhereToSave.Equals("local"))
+                            {
+                                <input type="checkbox" class="form-check-input" id="checkForLocal" name="checkForLocal" checked="checked">
+                            }
+                            else
+                            {
+                                <input type="checkbox" class="form-check-input" id="checkForLocal" name="checkForLocal">
+                            }
+                            <label class="form-check-label" for="checkForLocal">Save Local</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                    <div class="p-2 bd-highlight">
+                        @if (Model.TempConfigHolder is not null)
+                        {
+                            for (int i = 0; i < Model.TempConfigHolder.ShipsToCreate; i++)
+                            {
+                                <div class="d-flex flex-row bd-highlight mb-3">
+                                    <div class="p-2 bd-highlight">
+                                        <div class="form-floating">
+                                            <input class="form-control" id="inputShipName@(i + 1)" name="inputShipName@(i + 1)" placeholder="Name for Ship @(i + 1)"/>
+                                            <label for="inputShipName@(i + 1)">Name for Ship @(i + 1)</label>
+                                        </div>
+                                    </div>
+                                    <div class="p-2 bd-highlight">
+                                        <div class="form-floating">
+                                            <input class="form-control" id="inputShipQuantity@(i + 1)" name="inputShipQuantity@(i + 1)" placeholder="Quantity for Ship @(i + 1)"/>
+                                            <label for="inputShipQuantity@(i + 1)">Quantity for Ship @(i + 1)</label>
+                                        </div>
+                                    </div>
+                                    <div class="p-2 bd-highlight">
+                                        <div class="form-floating">
+                                            <input class="form-control" id="inputShipSizeY@(i + 1)" name="inputShipSizeY@(i + 1)" placeholder="ShipSizeY for Ship @(i + 1)"/>
+                                            <label for="inputShipSizeY@(i + 1)">ShipSizeY for Ship @(i + 1)</label>
+                                        </div>
+                                    </div>
+                                    <div class="p-2 bd-highlight">
+                                        <div class="form-floating">
+                                            <input class="form-control" id="inputShipSizeX@(i + 1)" name="inputShipSizeX@(i + 1)" placeholder="ShipSizeX for Ship @(i + 1)"/>
+                                            <label for="inputShipSizeX@(i + 1)">ShipSizeX for Ship @(i + 1)</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
