@@ -114,13 +114,7 @@ namespace BattleShipConsoleApp
 
             if (loadFromDataLocationType is EDataLocationType.DataBase)
             {
-                using var db = new ApplicationDbContext();
-                var confText =
-                    db.GameConfigSaves.FirstOrDefault(c => c!.ConfigName!.ToUpper() == configName.ToUpper());
-                _loadedGameConfigName = confText!.ConfigName;
-                if (confText != null)
-                    config = JsonSerializer.Deserialize<GameConfig>(confText.GameConfigJsnString) ??
-                             throw new InvalidOperationException();
+
             }
 
             return config;

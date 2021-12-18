@@ -1,6 +1,6 @@
 ﻿@page
 @using BattleShipBrain
-@model WebApplication1.Pages.newGame.newConfig
+@model WebApplication1.Pages.NewGame.NewConfig
 
 @{
     ViewData["Title"] = "LoadConfiguration";
@@ -85,7 +85,7 @@
                             }
                             <label for="inputShipQuantity">Ships to create</label>
                         </div>
-                        <div class="form-group form-check">
+                        <div class="form-group form-switch">
                             @if (Model.TempConfigHolder is not null && Model.TempConfigHolder.WhereToSave.Equals("db"))
                             {
                                 <input type="checkbox" class="form-check-input" id="checkForBb" name="checkForBb" checked="checked">
@@ -96,7 +96,7 @@
                             }
                             <label class="form-check-label" for="checkForBb">Save in DB</label>
                         </div>
-                        <div class="form-group form-check">
+                        <div class="form-group form-switch">
                             @if (Model.TempConfigHolder is not null && Model.TempConfigHolder.WhereToSave.Equals("local"))
                             {
                                 <input type="checkbox" class="form-check-input" id="checkForLocal" name="checkForLocal" checked="checked">
@@ -109,7 +109,7 @@
                         </div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>
-                    <div class="p-2 bd-highlight">
+                    <div class="p-3 bd-highlight">
                         @if (Model.TempConfigHolder is not null)
                         {
                             for (int i = 0; i < Model.TempConfigHolder.ShipsToCreate; i++)

@@ -1,0 +1,35 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-group {
+  margin-bottom: 1rem;!important;
+}
+
+.form-floating {
+  margin-bottom: 1rem;!important;
+}
+.form-text {
+  margin-bottom: 1rem;!important;
+}
+a.disabled {
+  /* Make the disabled links grayish*/
+  color: gray;
+  /* And disable the pointer events */
+  pointer-events: none;
+}

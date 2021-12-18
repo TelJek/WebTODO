@@ -16,7 +16,7 @@ namespace BattleShipBrain
         private bool _playerAShipDone;
         private bool _playerBShipDone;
 
-        public BsBrain(GameConfig config, string basePath)
+        public BsBrain(GameConfig config, string? basePath)
         {
             _gameConfig = config;
             _basePath = basePath;

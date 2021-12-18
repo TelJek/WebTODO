@@ -5,9 +5,9 @@ using Newtonsoft.Json;
 using WebApplication1.DAL;
 using WebApplication1.WebLogic;
 
-namespace WebApplication1.Pages.newGame;
+namespace WebApplication1.Pages.NewGame;
 
-public class newConfig : PageModel
+public class NewConfig : PageModel
 {
     public TempConfigHolder? TempConfigHolder { get; set; }
 

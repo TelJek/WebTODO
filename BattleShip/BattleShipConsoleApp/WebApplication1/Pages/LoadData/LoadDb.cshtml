@@ -1,6 +1,6 @@
 ﻿@page
 @using WebApplication1.DAL
-@model WebApplication1.Pages.loadData.loadDb
+@model WebApplication1.Pages.LoadData.LoadDb
 
 @{
     ViewData["Title"] = "LoadConfiguration";
@@ -18,15 +18,15 @@
             <div class="d-flex justify-content-center">
                 <div class="d-flex flex-row bd-highlight mb-3">
                     <div class="p-2 bd-highlight">
-                        <form method="post">
+                        <form method="get">
                             <div class="form-floating ">
-                                <select class="form-control" id="inputDbConfigName" name="inputDbConfigName">
-                                    @foreach (var item in AccessData.GetDataFromDb())
+                                <select class="form-select" id="inputDbConfigId" asp-for="ConfigId">
+                                    @foreach (var item in AccessData.GetConfigsFromDb(null)!)
                                     {
-                                        <option>@Html.DisplayFor(modelItem => item.ConfigName)</option>
+                                        <option value="@item.GameConfigSavedId">@Html.DisplayFor(modelItem => item.ConfigName)</option>
                                     }
                                 </select>
-                                <label for="inputDbConfigName">Choose Configuration to load!</label>
+                                <label for="inputDbConfigId" asp-for="ConfigId">Choose Configuration to load!</label>
                             </div>
                             <button type="submit" class="btn btn-primary">Start Game from Existing Configuration in Database</button>
                         </form>

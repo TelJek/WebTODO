@@ -1,0 +1,148 @@
+﻿@page
+@model WebApplication1.Pages.Game.GameBoards
+
+@{
+    ViewData["Title"] = "Game Boards";
+}
+
+<div class="d-flex justify-content-center">
+    <div class="text-center">
+        <h2 class="display-10">@Model.PlayerSideToOutput, your Boards!</h2>
+    </div>
+</div>
+<div class="d-flex justify-content-center">
+    <div class="d-flex flex-row bd-highlight">
+        <div class="p-3 bd-highlight row-cols-lg-auto">
+            <div class="text-center">
+                <h5 class="display-10">Your Board with Ships!</h5>
+            </div>
+            <div class="">
+                <table>
+                    @for (int y = 0; y < Model.Brain!.GetBoard(0).GetLength(1); y++)
+                    {
+                        <tr>
+                            @for (int x = 0; x < Model.Brain.GetBoard(0).GetLength(0); x++)
+                            {
+                                if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-E-|"))
+                                {
+                                    <td class="table-td" onclick="" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                    </td>
+                                }
+                                else if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-S-|"))
+                                {
+                                    <td class="table-td" onclick="" bgcolor="#a52a2a" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                    </td>
+                                }
+                                else if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-B-|"))
+                                {
+                                    <td class="table-td" onclick="" bgcolor="#000000" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                    </td>
+                                }
+                                else if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-H-|"))
+                                {
+                                    <td class="table-td" onclick="" bgcolor="#ff0000" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                    </td>
+                                }
+                            }
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+        <div class="p-3 bd-highlight row-cols-lg-auto">
+            <div class="text-center">
+                <h5 class="display-10">Your Board with Mines!</h5>
+            </div>
+            <div class="">
+                <table>
+                    @for (int y = 0; y < Model.Brain.GetBoard(0).GetLength(1); y++)
+                    {
+                        <tr>
+                            @for (int x = 0; x < Model.Brain.GetBoard(0).GetLength(0); x++)
+                            {
+                                if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-E-|"))
+                                {
+                                    <td class="table-td" onclick="" bgcolor="#00bfff" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                    </td>
+                                }
+                                else if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-B-|"))
+                                {
+                                    <td class="table-td" onclick="" bgcolor="#a52a2a" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                    </td>
+                                }
+                                else if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-H-|"))
+                                {
+                                    <td class="table-td" onclick="" bgcolor="#ff0000" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                    </td>
+                                }
+                            }
+                        </tr>
+                    }
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="d-flex justify-content-center">
+    <div class="d-flex flex-row bd-highlight mb-3">
+        <div class="p-2 bd-highlight">
+            <span>
+                <div class="d-flex justify-content-center">Empty</div>
+                <div class="d-flex justify-content-center">
+                    <table>
+                        <tr>
+                            <td class="table-td" onclick="" bgcolor="#00bfff" style="height: 32px; width: 32px; border: 2px solid #000;">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </span>
+        </div>
+        <div class="p-2 bd-highlight">
+            <span>
+                <div class="d-flex justify-content-center">Ship</div>
+                <div class="d-flex justify-content-center">
+                    <table>
+                        <tr>
+                            <td class="table-td" onclick="" bgcolor="#000000" style="height: 32px; width: 32px; border: 2px solid #000;">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </span>
+        </div>
+        <div class="p-2 bd-highlight">
+            <span>
+                <div class="d-flex justify-content-center">Miss</div>
+                <div class="d-flex justify-content-center">
+                    <table>
+                        <tr>
+                            <td class="table-td" onclick="" bgcolor="#a52a2a" style="height: 32px; width: 32px; border: 2px solid #000;">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </span>
+        </div>
+        <div class="p-2 bd-highlight">
+            <span>
+                <div class="d-flex justify-content-center">Hit</div>
+                <div class="d-flex justify-content-center">
+                    <table>
+                        <tr>
+                            <td class="table-td" onclick="" bgcolor="#ff0000" style="height: 32px; width: 32px; border: 2px solid #000;">
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </span>
+        </div>
+    </div>
+</div>
+<div class="d-flex justify-content-center">
+    <div class="d-flex flex-row bd-highlight mb-3">
+        <div class="p-2 bd-highlight">
+            <a class="btn btn-primary" asp-area="" asp-page="/Index" role="button">Main menu</a>
+        </div>
+    </div>
+</div>
