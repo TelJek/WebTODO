@@ -18,34 +18,34 @@
             </div>
             <div class="">
                 <table>
-                    @for (int y = 0; y < Model.Brain!.GetBoard(0).GetLength(1); y++)
-                    {
-                        <tr>
-                            @for (int x = 0; x < Model.Brain.GetBoard(0).GetLength(0); x++)
-                            {
-                                if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-E-|"))
-                                {
-                                    <td class="table-td" onclick="" style="height: 32px; width: 32px; border: 2px solid #000;">
-                                    </td>
-                                }
-                                else if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-S-|"))
-                                {
-                                    <td class="table-td" onclick="" bgcolor="#a52a2a" style="height: 32px; width: 32px; border: 2px solid #000;">
-                                    </td>
-                                }
-                                else if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-B-|"))
-                                {
-                                    <td class="table-td" onclick="" bgcolor="#000000" style="height: 32px; width: 32px; border: 2px solid #000;">
-                                    </td>
-                                }
-                                else if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-H-|"))
-                                {
-                                    <td class="table-td" onclick="" bgcolor="#ff0000" style="height: 32px; width: 32px; border: 2px solid #000;">
-                                    </td>
-                                }
-                            }
-                        </tr>
-                    }
+                     @for (int y = 0; y < Model.Brain!.GetBoard(0).GetLength(1); y++)
+                     {
+                         <tr>
+                             @for (int x = 0; x < Model.Brain.GetBoard(0).GetLength(0); x++)
+                             {
+                                 if (Model.Brain.GetBoard(0)[x, y].ToString().Equals("|-E-|"))
+                                 {
+                                     <td class="table-td" onclick="" bgcolor="#00bfff" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                     </td>
+                                 }
+                                 else if (Model.Brain.GetBoard(0)[x, y].ToString().Equals("|-S-|"))
+                                 {
+                                     <td class="table-td" onclick="" bgcolor="#a52a2a" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                     </td>
+                                 }
+                                 else if (Model.Brain.GetBoard(0)[x, y].ToString().Equals("|-B-|"))
+                                 {
+                                     <td class="table-td" onclick="" bgcolor="#000000" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                     </td>
+                                 }
+                                 else if (Model.Brain.GetBoard(0)[x, y].ToString().Equals("|-H-|"))
+                                 {
+                                     <td class="table-td" onclick="" bgcolor="#ff0000" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                     </td>
+                                 }
+                             }
+                         </tr>
+                     }
                 </table>
             </div>
         </div>
@@ -60,7 +60,7 @@
                         <tr>
                             @for (int x = 0; x < Model.Brain.GetBoard(0).GetLength(0); x++)
                             {
-                                if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-E-|"))
+                                if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-E-|") || Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-S-|"))
                                 {
                                     <td class="table-td" onclick="" bgcolor="#00bfff" style="height: 32px; width: 32px; border: 2px solid #000;">
                                     </td>

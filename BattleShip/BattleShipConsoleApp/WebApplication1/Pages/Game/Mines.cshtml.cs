@@ -5,7 +5,7 @@ using WebApplication1.DAL;
 
 namespace WebApplication1.Pages.Game;
 
-public class GameMove : PageModel
+public class Mines : PageModel
 {
     public string? LoadedConfigId { get; set; }
     public string? LoadedSaveId { get; set; }

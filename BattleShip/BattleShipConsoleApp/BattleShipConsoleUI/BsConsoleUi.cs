@@ -403,7 +403,7 @@ namespace BattleShipConsoleUI
             var brain = _brain;
             var gameConfig = brain?.GetGameConfig();
 
-            if (brain!.CheckPlayerPlacedShips(player) is true || gameConfig!.ShipConfigs.Count == 0)
+            if (brain!.CheckPlayerPlacedShips(player) || gameConfig!.ShipConfigs.Count == 0)
             {
                 Console.WriteLine("\nYou do not have available ships to use!\n");
                 Console.WriteLine("=============================================");

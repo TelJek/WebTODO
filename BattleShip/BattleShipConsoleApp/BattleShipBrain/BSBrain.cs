@@ -52,7 +52,7 @@ namespace BattleShipBrain
         {
             var boardIntToCheck = 0;
             if (playerToCheckWin is EPlayer.PlayerA) boardIntToCheck = 2;
-            
+
             var boardToCheck = GetBoard(boardIntToCheck);
             for (var x = 0; x < boardToCheck.GetLength(0); x++)
             for (var y = 0; y < boardToCheck.GetLength(1); y++)
@@ -64,7 +64,7 @@ namespace BattleShipBrain
             _winnerPlayer = playerToCheckWin;
             return true;
         }
-        
+
         public bool CheckPlayerPlacedShips(EPlayer player)
         {
             switch (player)
@@ -101,7 +101,7 @@ namespace BattleShipBrain
         {
             return _currentPlayer;
         }
-        
+
         public EPlayer GetWinner()
         {
             return _winnerPlayer;
@@ -165,36 +165,37 @@ namespace BattleShipBrain
         {
             var currentTouchRule = GetTouchRule();
             GameConfig config = _gameConfig;
-            var integerForBoards= 0;
+            var integerForBoards = 0;
             if (player is EPlayer.PlayerB) integerForBoards = 2;
-
+            if (_gameBoards[integerForBoards].Ships is null) return true;
             switch (currentTouchRule)
             {
+            
                 case EShipTouchRule.NoTouch:
-                    if (_gameBoards[integerForBoards].Ships is null) return true;
-                    foreach (var coordinate in shipToPut.GetCords()!)
+                    foreach (var coordinate in shipToPut.GetCords())
                         for (var y = -1; y < 2; y++)
                         for (var x = -1; x < 2; x++)
                         {
                             var xForPlacing = x;
                             var yForPlacing = y;
 
-                            if (config.BoardSizeX - 1 - coordinate.X == 0) xForPlacing = 0;
-                            if (config.BoardSizeY - 1 - coordinate.Y == 0) yForPlacing = 0;
+                            if (coordinate.X > config.BoardSizeX - 1 ||
+                                coordinate.Y > config.BoardSizeY - 1) return false;
 
-                            if (coordinate.X == 0) xForPlacing = 0;
-                            if (coordinate.Y == 0) yForPlacing = 0;
+                            if (config.BoardSizeX - 1 - coordinate.X == 0 && xForPlacing > 0) xForPlacing = 0;
+                            if (config.BoardSizeY - 1 - coordinate.Y == 0 && yForPlacing > 0) yForPlacing = 0;
 
+                            if (coordinate.X == 0 && xForPlacing < 0) xForPlacing = 0;
+                            if (coordinate.Y == 0 && yForPlacing < 0) yForPlacing = 0;
 
-                            if (_gameBoards[integerForBoards].Board[coordinate.X + xForPlacing, coordinate.Y + yForPlacing]
-                                .IsShip is true) return false;
+                            if (_gameBoards[integerForBoards]
+                                .Board[coordinate.X + xForPlacing, coordinate.Y + yForPlacing]
+                                .IsShip) return false;
                         }
-                    // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
 
                     return true;
 
                 case EShipTouchRule.CornerTouch:
-                    if (_gameBoards[integerForBoards].Ships is null) return true;
                     foreach (var coordinate in shipToPut.GetCords()!)
                         for (var y = -1; y < 2; y++)
                         for (var x = -1; x < 2; x++)
@@ -202,26 +203,37 @@ namespace BattleShipBrain
                             var xForPlacing = x;
                             var yForPlacing = y;
 
-                            if (config.BoardSizeX - 1 - coordinate.X == 0) xForPlacing = 0;
-                            if (config.BoardSizeY - 1 - coordinate.Y == 0) yForPlacing = 0;
+                            if (coordinate.X > config.BoardSizeX - 1 ||
+                                coordinate.Y > config.BoardSizeY - 1) return false;
 
-                            if (coordinate.X == 0) xForPlacing = 0;
-                            if (coordinate.Y == 0) yForPlacing = 0;
+                            if (config.BoardSizeX - 1 - coordinate.X == 0 && xForPlacing > 0) xForPlacing = 0;
+                            if (config.BoardSizeY - 1 - coordinate.Y == 0 && yForPlacing > 0) yForPlacing = 0;
+
+                            if (coordinate.X == 0 && xForPlacing < 0) xForPlacing = 0;
+                            if (coordinate.Y == 0 && yForPlacing < 0) yForPlacing = 0;
 
                             if (yForPlacing == 1 || yForPlacing == -1) xForPlacing = 0;
 
-                            if (_gameBoards[integerForBoards].Board[coordinate.X + xForPlacing, coordinate.Y + yForPlacing]
-                                .IsShip is true) return false;
+                            if (_gameBoards[integerForBoards]
+                                .Board[coordinate.X + xForPlacing, coordinate.Y + yForPlacing]
+                                .IsShip) return false;
                         }
                     // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
 
                     return true;
 
                 case EShipTouchRule.SideTouch:
-                    if (_gameBoards[integerForBoards].Ships is null) return true;
                     foreach (var coordinate in shipToPut.GetCords()!)
-                        if (_gameBoards[integerForBoards].Board[coordinate.X, coordinate.Y].IsShip is true)
-                            return false;
+                        for (var y = -1; y < 2; y++)
+                        for (var x = -1; x < 2; x++)
+                        {
+                            if (coordinate.X > config.BoardSizeX - 1 ||
+                                coordinate.Y > config.BoardSizeY - 1) return false;
+
+                            if (_gameBoards[integerForBoards].Board[coordinate.X, coordinate.Y].IsShip)
+                                return false;
+                        }
+
                     // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
                     return true;
             }
@@ -241,7 +253,7 @@ namespace BattleShipBrain
                             List<Ship> shipsA = new List<Ship>();
                             shipsA.Add(ship);
                             _gameBoards[0].Ships = shipsA;
-                            foreach (var coordinate in ship.GetCords()!)
+                            foreach (var coordinate in ship.GetCords())
                                 _gameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
                         }
                         else
@@ -309,8 +321,8 @@ namespace BattleShipBrain
             {
                 if (String.Equals(file.Name.Split(".")[0], configName, StringComparison.CurrentCultureIgnoreCase))
                 {
- 
-                    var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Configs" + Path.DirectorySeparatorChar +
+                    var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Configs" +
+                                         Path.DirectorySeparatorChar +
                                          $"{file.Name.Split(".")[0].ToUpper()}.json";
                     return fileNameConfig;
                 }
@@ -328,8 +340,8 @@ namespace BattleShipBrain
             {
                 if (String.Equals(file.Name.Split(".")[0], saveName, StringComparison.CurrentCultureIgnoreCase))
                 {
- 
-                    var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Saves" + Path.DirectorySeparatorChar +
+                    var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Saves" +
+                                         Path.DirectorySeparatorChar +
                                          $"{file.Name.Split(".")[0]}.json";
                     return fileNameConfig;
                 }
@@ -374,12 +386,12 @@ namespace BattleShipBrain
                     DirectoryInfo di = new(@$"{GetBasePath() + Path.DirectorySeparatorChar + "Configs"}");
                     FileInfo[] files = di.GetFiles("*.json");
 
-                    var sourcePath = @$"{GetBasePath() 
-                                         + Path.DirectorySeparatorChar 
-                                         + "Configs" 
-                                         + Path.DirectorySeparatorChar 
+                    var sourcePath = @$"{GetBasePath()
+                                         + Path.DirectorySeparatorChar
+                                         + "Configs"
+                                         + Path.DirectorySeparatorChar
                                          + $"{configOldName}.json"}";
-            
+
                     var newName = $"{configNewName}.json";
                     foreach (FileInfo file in files)
                     {
@@ -391,9 +403,10 @@ namespace BattleShipBrain
                             return true;
                         }
                     }
+
                     break;
             }
-            
+
             return false;
         }
 
@@ -405,10 +418,10 @@ namespace BattleShipBrain
                     DirectoryInfo di = new(@$"{GetBasePath() + Path.DirectorySeparatorChar + "Configs"}");
                     FileInfo[] files = di.GetFiles("*.json");
 
-                    var sourcePath = @$"{GetBasePath() 
-                                         + Path.DirectorySeparatorChar 
-                                         + "Configs" 
-                                         + Path.DirectorySeparatorChar 
+                    var sourcePath = @$"{GetBasePath()
+                                         + Path.DirectorySeparatorChar
+                                         + "Configs"
+                                         + Path.DirectorySeparatorChar
                                          + $"{configName}.json"}";
                     File.Delete(sourcePath);
                     return true;
@@ -425,10 +438,10 @@ namespace BattleShipBrain
                     DirectoryInfo di = new(@$"{GetBasePath() + Path.DirectorySeparatorChar + "Saves"}");
                     FileInfo[] files = di.GetFiles("*.json");
 
-                    var sourcePath = @$"{GetBasePath() 
-                                         + Path.DirectorySeparatorChar 
-                                         + "Saves" 
-                                         + Path.DirectorySeparatorChar 
+                    var sourcePath = @$"{GetBasePath()
+                                         + Path.DirectorySeparatorChar
+                                         + "Saves"
+                                         + Path.DirectorySeparatorChar
                                          + $"{saveName}.json"}";
                     File.Delete(sourcePath);
                     return true;
@@ -436,7 +449,7 @@ namespace BattleShipBrain
 
             return false;
         }
-        
+
         public string GetBrainJson()
         {
             var jsonOptions = new JsonSerializerOptions

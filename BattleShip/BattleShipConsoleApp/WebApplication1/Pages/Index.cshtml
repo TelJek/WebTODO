@@ -40,7 +40,7 @@
                         {
                             if (!Model.Brain.CheckPlayerPlacedShips(Model.Player))
                             {
-                                <a class="btn btn-primary" href="#" role="button">Put my Ships!</a>
+                                <a class="btn btn-primary" asp-page="/Game/Ships" role="button">Put my Ships!</a>
                             }
                             else
                             {
@@ -68,7 +68,7 @@
                         {
                             if (Model.CurrentPlayer.Equals(Model.PlayerSideToOutput))
                             {
-                                <a class="btn btn-primary" asp-area="" asp-page="/Game/GameMove" role="button">Put a Bomb!</a>
+                                <a class="btn btn-primary" asp-area="" asp-page="/Game/Mines" role="button">Put a Bomb!</a>
                             }
                             else
                             {
