@@ -14,14 +14,16 @@ namespace BattleShipConsoleUI
     {
         private static BsBrain? _brain;
         private readonly string? _configName;
+        private readonly int _configId = 0;
         private readonly EDataLocationType _configLocationTypeDataLocation;
         private string _saveName = "NewGame";
         private EDataLocationType _saveDataLocationType = EDataLocationType.Local;
 
-        public BsConsoleUi(BsBrain brain, string? confName, EDataLocationType confLocationTypeDataLocation)
+        public BsConsoleUi(BsBrain brain, string? confName, EDataLocationType confLocationTypeDataLocation, int configId)
         {
             _brain = brain;
             _configName = confName;
+            _configId = configId;
             _configLocationTypeDataLocation = confLocationTypeDataLocation;
         }
 
@@ -322,7 +324,10 @@ namespace BattleShipConsoleUI
             Console.Write("=========| Load DB Save |=========\n");
             foreach (var dbConfig in db.GameStateSaves)
             {
-                Console.WriteLine(dbConfig.SaveName);
+                if (dbConfig.GameStateConfigId == _configId)
+                {
+                    Console.WriteLine(dbConfig.SaveName);
+                }
             }
             Console.WriteLine();
             Console.WriteLine("=============================================");

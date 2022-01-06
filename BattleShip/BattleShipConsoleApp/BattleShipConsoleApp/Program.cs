@@ -12,6 +12,7 @@ namespace BattleShipConsoleApp
         private static string? _basePath;
         private static readonly GameConfig Config = new();
         private static string? _loadedGameConfigName = "";
+        private static int _loadedGameConfigId = 0;
 
         private static void Main(string[] args)
         {
@@ -122,6 +123,7 @@ namespace BattleShipConsoleApp
                     if (string.Equals(dbConfig!.ConfigName, configName, StringComparison.CurrentCultureIgnoreCase))
                     {
                         _loadedGameConfigName = dbConfig.ConfigName;
+                        _loadedGameConfigId = dbConfig.GameConfigSavedId;
                         config = JsonSerializer.Deserialize<GameConfig>(dbConfig.GameConfigJsnString) ?? throw new InvalidOperationException();
                     }
                 }
@@ -134,7 +136,7 @@ namespace BattleShipConsoleApp
         private static void StartProgram(string config, EDataLocationType locationType)
         {
             BsBrain brain = new(LoadNewConfig(config, locationType), _basePath!);
-            BsConsoleUi console = new(brain, _loadedGameConfigName, locationType);
+            BsConsoleUi console = new(brain, _loadedGameConfigName, locationType, _loadedGameConfigId);
             console.DrawConsoleUi();
             // console.DrawUi("main");
         }

@@ -163,7 +163,7 @@
                                     <h8 class="display-12">Selected Ship</h8>
                                 </div>
                                 <div class="form-floating">
-                                    <input class="form-control" id="textForActiveShip" name="textForActiveShip" placeholder="Name: @Model.ShipToUseFromCookie.FromLegacyCookieString()["shipName"]" value="Available: @Model.ShipToUseFromCookie.FromLegacyCookieString()["shipQuantity"]" disabled readonly/>
+                                    <input class="form-control" id="textForActiveShip" name="textForActiveShip" placeholder="Name: @Model.ShipToUseFromCookie.FromLegacyCookieString()["shipName"]" value="Available: @(int.Parse(Model.ShipToUseFromCookie.FromLegacyCookieString()["shipQuantity"]) - 1)" disabled readonly/>
                                     <label for="textForActiveShip">Name: @Model.ShipToUseFromCookie.FromLegacyCookieString()["shipName"]</label>
                                 </div>
                             }

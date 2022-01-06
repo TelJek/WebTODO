@@ -7,7 +7,6 @@
     <ItemGroup>
       <ProjectReference Include="..\BattleShipBrain\BattleShipBrain.csproj" />
       <ProjectReference Include="..\DAL\DAL.csproj" />
-      <ProjectReference Include="..\MenuSystem\MenuSystem.csproj" />
     </ItemGroup>
 
     <ItemGroup>
