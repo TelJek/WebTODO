@@ -7,38 +7,69 @@ namespace WebApplication1.Pages.Game;
 
 public class Mines : PageModel
 {
-    public string? LoadedConfigId { get; set; }
-    public string? LoadedSaveId { get; set; }
     public string? PlayerSide { get; set; }
     public string? PlayerSideToOutput { get; set; } = "NotDefined!";
+    public EPlayer PlayerSideToCheck { get; set; } = EPlayer.NotDefined;
     public BsBrain? Brain { get; set; }
+    public List<StartedGame>? Game { get; set; }
+    public string? ShareCode { get; set; }
+    public List<int> IndexForBoards { get; set; } = new() {0,2};
 
-    public void OnGet(string? moveType, int? x, int? y)
+    public IActionResult OnGet(string? moveType, int? x, int? y)
     {
-        LoadedConfigId = HttpContext.Request.Cookies["ConfigId"];
-        LoadedSaveId = HttpContext.Request.Cookies["SaveId"];
         PlayerSide = HttpContext.Request.Cookies["PlayerSide"];
-        if (LoadedConfigId != null && LoadedSaveId != null && PlayerSide != null)
+        ShareCode = HttpContext.Request.Cookies["ShareCode"];
+        Game = AccessData.GetAllGamesFromDb(ShareCode);
+        Brain = AccessData.RestoreSaveFromJson(Game[0].SavedGameStateJsnString, Game[0].GameConfigJsnString);
+        if (PlayerSide!.Equals("playerSideB")) IndexForBoards = new List<int>() {2,0};
+        if (Brain != null)
         {
-            if (PlayerSide is "playerSideA") PlayerSideToOutput = "Player A";
-            if (PlayerSide is "playerSideB") PlayerSideToOutput = "Player B";
-            Brain = AccessData.RestoreSaveFromJson(LoadedConfigId, LoadedSaveId);
-            if (moveType is "mine" && x != null && y != null)
+            if (PlayerSide is "playerSideA")
+            {
+                PlayerSideToOutput = "Player A";
+                PlayerSideToCheck = EPlayer.PlayerA;
+            }
+
+            if (PlayerSide is "playerSideB")
+            {
+                PlayerSideToOutput = "Player B";
+                PlayerSideToCheck = EPlayer.PlayerB;
+            }
+            if (moveType is "mine" && x != null && y != null && Brain.GetPlayer() == PlayerSideToCheck)
             {
                 if (PlayerSide!.Equals("playerSideA"))
                 {
-                    Brain!.PutBomb(x ?? default(int), y ?? default(int), EPlayer.PlayerB);
+                    Brain!.PutBomb((int) x,(int) y, EPlayer.PlayerB);
+                    if (!Brain.DidBombHit((int) x, (int) y, EPlayer.PlayerB))
+                    {
+                        Brain.ChangePlayerNum();
+                    }
                     Brain.DidPlayerWon(EPlayer.PlayerA);
+                    AccessData.UpdateSave(Brain!, Game[0].ConnectCode);
+                    if (!Brain.DidBombHit((int) x, (int) y, EPlayer.PlayerB) || Brain.DidPlayerWon(EPlayer.PlayerA))
+                    {
+                        return RedirectToPage("/Index");
+                    }
                 }
                 
                 if (PlayerSide!.Equals("playerSideB"))
                 {
-                    Brain!.PutBomb(x ?? default(int), y ?? default(int), EPlayer.PlayerA);
-                    Brain.DidPlayerWon(EPlayer.PlayerB);
-                }
+                    Brain!.PutBomb((int) x,(int) y, EPlayer.PlayerA);
+                    if (!Brain.DidBombHit((int) x, (int) y, EPlayer.PlayerA))
+                    {
+                        Brain.ChangePlayerNum();
+                    }
 
-                AccessData.UpdateSave(Brain!, int.Parse(LoadedSaveId), LoadedConfigId);
+                    Brain.DidPlayerWon(EPlayer.PlayerB);
+                    AccessData.UpdateSave(Brain!, Game[0].ConnectCode);
+                    if (!Brain.DidBombHit((int) x, (int) y, EPlayer.PlayerA) || Brain.DidPlayerWon(EPlayer.PlayerB))
+                    {
+                        return RedirectToPage("/Index");
+                    }
+                }
             }
         }
+
+        return Page();
     }
 }

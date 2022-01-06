@@ -43,6 +43,9 @@ public class LoadSave : PageModel
             {
                 CookieOptions option = new CookieOptions();
                 Response.Cookies.Append("SaveId", SaveId, option);
+                var shareCode = new Random().Next(10000, 100000);
+                Response.Cookies.Append("ShareCode", shareCode.ToString(), option);
+                AccessData.CreateNewGame(SaveId, Request.Cookies["ConfigId"], shareCode);
                 return RedirectToPage("/Index");
             }
         }

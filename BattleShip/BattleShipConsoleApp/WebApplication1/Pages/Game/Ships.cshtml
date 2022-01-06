@@ -1,6 +1,5 @@
 ﻿@page
 @using BattleShipBrain
-@using WebApplication1.DAL
 @using WebApplication1.WebLogic
 @model WebApplication1.Pages.Game.Ships
 
@@ -21,11 +20,24 @@
             </div>
             <div class="">
                 <table>
+                    <tr>
+                        <td class="table-td" onclick="" bgcolor="white" style="height: 32px; width: 32px; border: 2px solid #000;">
+                        </td>
+                        @for (int y = 0; y < Model.Brain!.GetBoard(0).GetLength(1); y++)
+                        {
+                            <td class="table-td" onclick="" bgcolor="white" style="height: 32px; width: 32px; border: 2px solid #000; text-align: center; vertical-align: middle">
+                                <strong>@(y + 1)</strong>
+                            </td>
+                        }
+                    </tr>
                     @if (Model.PlayerSide!.Equals("playerSideA"))
                     {
                         for (int y = 0; y < Model.Brain!.GetBoard(0).GetLength(1); y++)
                         {
                             <tr>
+                                <td class="table-td" onclick="" bgcolor="white" style="height: 32px; width: 32px; border: 2px solid #000;text-align: center; vertical-align: middle">
+                                    <strong>@(y + 1)</strong>
+                                </td>
                                 @for (int x = 0; x < Model.Brain.GetBoard(0).GetLength(0); x++)
                                 {
                                     if (Model.Brain.GetBoard(0)[x, y].ToString().Equals("|-E-|"))
@@ -101,16 +113,15 @@
                 <h5 class="display-10">Your Ships!</h5>
             </div>
             <div>
-                @if (Model.Config != null)
+                @if (Model.Brain!.GetGameConfig()!.ShipConfigs.Count > 0)
                 {
                     if (!Model.Brain!.CheckPlayerPlacedShips(Model.PlayerSideCheck))
                     {
-                        foreach (ShipConfig shipConfig in Model.Config.ShipConfigs)
+                        foreach (ShipConfig shipConfig in Model.Brain!.GetGameConfig()!.ShipConfigs)
                         {
                             <div class="form-floating">
                                 <input class="form-control" id="textForConfigShipConfig" name="textForConfigShipConfig" placeholder="@shipConfig.Name" value="Q: @shipConfig.Quantity, X: @shipConfig.ShipSizeX, Y: @shipConfig.ShipSizeY" disabled readonly/>
-                                <label for="textForConfigShipConfig">@shipConfig.Name</label>
-                                @if (Model.UsedShipsFromCookie != null && Model.UsedShipsFromCookie.FromLegacyCookieString().Values.Any(value => value.Equals(shipConfig.Name)))
+                                @if (Model.CheckIfShipWithNameIsUsed(shipConfig.Name))
                                 {
                                     <label for="textForConfigShipConfig">@shipConfig.Name - All Placed!</label>
                                 }
@@ -130,51 +141,55 @@
                 }
             </div>
         </div>
-        <div class="p-3 bd-highlight row-cols-lg-auto">
-            <form method="get">
-                <div class="text-center">
-                    <h5 class="display-10">Choose ship to use!</h5>
-                </div>
-                <div class="form-floating">
-                    <select class="form-select" id="inputShipToUse" asp-for="ShipToUseInfo">
-                        @foreach (ShipConfig shipConfig in Model.Config!.ShipConfigs)
-                        {
-                            if (shipConfig != null)
-                            {
-                                var usedDetect = false;
-                                if (Model.UsedShipsFromCookie != null)
-                                {
-                                    foreach (var usedShip in Model.UsedShipsFromCookie.FromLegacyCookieString().Values)
-                                    {
-                                        if (shipConfig.Name!.Equals(usedShip)) usedDetect = true;
-                                    }
-                                }
-                                if (!usedDetect)
+        @{
+            var tempSideEnum = EPlayer.NotDefined;
+            if (Model.PlayerSide!.Equals("playerSideA")) tempSideEnum = EPlayer.PlayerA;
+            if (Model.PlayerSide!.Equals("playerSideB")) tempSideEnum = EPlayer.PlayerB;
+            @if (Model.Brain != null && !Model.Brain.CheckPlayerPlacedShips(tempSideEnum))
+            {
+                <div class="p-3 bd-highlight row-cols-lg-auto">
+                    <form method="get">
+                        <div class="text-center">
+                            <h5 class="display-10">Choose ship to use!</h5>
+                        </div>
+                        <div class="form-floating">
+                            <select class="form-select" id="inputShipToUse" asp-for="ShipToUseInfo">
+                                @foreach (ShipConfig shipConfig in Model.Brain.getPlayerLeftShips(Model.PlayerSideCheck))
                                 {
                                     <option value="@shipConfig.Name">@shipConfig.Name</option>
                                 }
+                            </select>
+                            <label for="inputShipToUse" asp-for="ShipToUseInfo">Ships</label>
+                        </div>
+                        @if (Model.CheckIsShipActive())
+                        {
+                            <div class="d-flex justify-content-center">
+                                <button type="submit" class="btn btn-primary disabled">Use ship</button>
+                            </div>
+                            <div id="passwordHelpBlock" class="form-text">
+                                You have to place all selected ships to choose new!
+                            </div>
+                            if (Model.ShipToUseFromCookie != null)
+                            {
+                                <div class="text-center">
+                                    <h8 class="display-12">Selected Ship</h8>
+                                </div>
+                                <div class="form-floating">
+                                    <input class="form-control" id="textForActiveShip" name="textForActiveShip" placeholder="Name: @Model.ShipToUseFromCookie.FromLegacyCookieString()["shipName"]" value="Available: @Model.ShipToUseFromCookie.FromLegacyCookieString()["shipQuantity"]" disabled readonly/>
+                                    <label for="textForActiveShip">Name: @Model.ShipToUseFromCookie.FromLegacyCookieString()["shipName"]</label>
+                                </div>
                             }
                         }
-                    </select>
-                    <label for="inputShipToUse" asp-for="ShipToUseInfo">Ships</label>
+                        else
+                        {
+                            <div class="d-flex justify-content-center">
+                                <button type="submit" class="btn btn-primary">Use ship</button>
+                            </div>
+                        }
+                    </form>
                 </div>
-                @if (Model.ShipToUseFromCookie != null && int.Parse(Model.ShipToUseFromCookie.FromLegacyCookieString()["shipQuantity"]) != 0)
-                {
-                    <div class="d-flex justify-content-center">
-                        <button type="submit" class="btn btn-primary disabled">Use ship</button>
-                    </div>
-                    <div id="passwordHelpBlock" class="form-text">
-                        You have to place all selected ships to choose new!
-                    </div>
-                }
-                else
-                {
-                    <div class="d-flex justify-content-center">
-                        <button type="submit" class="btn btn-primary">Use ship</button>
-                    </div>
-                }
-            </form>
-        </div>
+            }
+        }
     </div>
 </div>
 <div class="d-flex justify-content-center">

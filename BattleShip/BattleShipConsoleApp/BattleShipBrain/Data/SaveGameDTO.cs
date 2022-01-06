@@ -8,6 +8,12 @@ namespace BattleShipBrain
     public class SaveGameDto
     {
         public EPlayer CurrentPlayer { get; set; } = EPlayer.NotDefined;
+        public EPlayer WinnerPlayer { get; set; } = EPlayer.NotDefined;
+        public GameConfig? GameConfig { get; set; }
+        public bool PlayerAShipDone { get; set; }
+        public bool PlayerBShipDone { get; set; }
+        public List<ShipConfig>? PlayerAShipsLeft { get; set; }
+        public List<ShipConfig>? PlayerBShipsLeft { get; set; }
         public GameBoardDto[] GameBoards  { get; set; } = new GameBoardDto[4];
         
         public class GameBoardDto

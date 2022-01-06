@@ -49,6 +49,11 @@ namespace BattleShipBrain
 
         public EShipTouchRule EShipTouchRule { get; set; } = EShipTouchRule.NoTouch;
 
+        public List<ShipConfig> getAllShips()
+        {
+            return ShipConfigs;
+        }
+        
         public override string ToString()
         {
             var jsonOptions = new JsonSerializerOptions()

@@ -241,17 +241,55 @@ namespace BattleShipConsoleUI
             {
                 Console.Write("Enter Save name: ");
                 saveName = Console.ReadLine()?.Trim()!;
-                Console.Write("Saving format is: <SaveName> <Local,Db or Both>: ");
+                Console.Write("Saving format is: <Local,Db or Both>: ");
                 savingType = Console.ReadLine()?.Trim().ToUpper(); 
             }
             if (savingType is "LOCAL" or "BOTH")
             {
-                brain?.SaveGameState(saveName);
+                var fileNameSave = brain!.GetFileNameSave(saveName);
+                if (File.Exists(fileNameSave))
+                {
+                    var rewrite = "no";
+                    Console.WriteLine($"Save with name: {saveName} already exist!");
+                    Console.WriteLine($"Enter yes if you want to rewrite it!");
+                    rewrite = Console.ReadLine()?.Trim().ToUpper();
+                    if (rewrite is "YES")
+                    {
+                        Console.WriteLine($"LocalSave is being rewrite!");
+                        brain.SaveGameState(saveName);
+                    }
+                }
+                else
+                {
+                    brain.SaveGameState(saveName);
+                }
             }
             if (savingType is "DB" or "BOTH")
             {
                 using var db = new ApplicationDbContext();
-                var gameStateSave = new GameStateSaved
+                var gameStateSave = new GameStateSaved();
+                foreach (GameStateSaved dbGameStateSave in db.GameStateSaves)
+                {
+                    if (dbGameStateSave.SaveName == saveName)
+                    {
+                        var rewrite = "no";
+                        Console.WriteLine($"Save with name: {saveName} already exist!");
+                        Console.WriteLine($"Enter yes if you want to rewrite it!");
+                        rewrite = Console.ReadLine()?.Trim().ToUpper();
+                        if (rewrite is "YES")
+                        {
+                            gameStateSave = new GameStateSaved
+                            {
+                                SaveName = saveName,
+                                SavedGameStateJsnString = brain?.GetBrainJson()!
+                            };
+                            db.GameStateSaves.Add(gameStateSave);
+                            db.SaveChanges();
+                            return;
+                        }
+                    }
+                }
+                gameStateSave = new GameStateSaved
                 {
                     SaveName = saveName,
                     SavedGameStateJsnString = brain?.GetBrainJson()!
@@ -463,7 +501,7 @@ namespace BattleShipConsoleUI
                 configDataTypeStr = Console.ReadLine()?.Trim().ToUpper();
                 Console.Write("Enter the name of configuration you want to edit: ");
                 inputDataConfigOldName = Console.ReadLine()?.Trim();
-                Console.Write("Enter a new name of configuration you want to edit: ");
+                Console.Write("Enter a new name of configuration: ");
                 inputDataConfigNewName = Console.ReadLine()?.Trim();
                 Console.WriteLine();
             }

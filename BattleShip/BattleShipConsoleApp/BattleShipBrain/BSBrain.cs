@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using NuGet.Protocol;
 
 namespace BattleShipBrain
 {
@@ -12,23 +13,69 @@ namespace BattleShipBrain
         private EPlayer _currentPlayer = EPlayer.PlayerA;
         private EPlayer _winnerPlayer = EPlayer.NotDefined;
         private readonly GameBoard[] _gameBoards = new GameBoard[4];
-        private readonly GameConfig _gameConfig;
+        private static GameConfig? _gameConfig;
         private bool _playerAShipDone;
         private bool _playerBShipDone;
+        private List<ShipConfig> _playerAShipsLeft;
+        private List<ShipConfig> _playerBShipsLeft;
 
-        public BsBrain(GameConfig config, string? basePath)
+        public BsBrain(GameConfig? config, string? basePath)
         {
             _gameConfig = config;
             _basePath = basePath;
+            _playerAShipsLeft = _gameConfig!.ShipConfigs;
+            _playerBShipsLeft = _gameConfig.ShipConfigs;
             _gameBoards[0] = new GameBoard(EGameBoardType.Ships);
             _gameBoards[1] = new GameBoard(EGameBoardType.Mines);
             _gameBoards[2] = new GameBoard(EGameBoardType.Ships);
             _gameBoards[3] = new GameBoard(EGameBoardType.Mines);
 
-            _gameBoards[0].Board = new BoardSquareState[config.BoardSizeX, config.BoardSizeY];
-            _gameBoards[1].Board = new BoardSquareState[config.BoardSizeX, config.BoardSizeY];
-            _gameBoards[2].Board = new BoardSquareState[config.BoardSizeX, config.BoardSizeY];
-            _gameBoards[3].Board = new BoardSquareState[config.BoardSizeX, config.BoardSizeY];
+            _gameBoards[0].Board = new BoardSquareState[_gameConfig!.BoardSizeX, _gameConfig.BoardSizeY];
+            _gameBoards[1].Board = new BoardSquareState[_gameConfig.BoardSizeX, _gameConfig.BoardSizeY];
+            _gameBoards[2].Board = new BoardSquareState[_gameConfig.BoardSizeX, _gameConfig.BoardSizeY];
+            _gameBoards[3].Board = new BoardSquareState[_gameConfig.BoardSizeX, _gameConfig.BoardSizeY];
+        }
+
+        public List<ShipConfig> getPlayerLeftShips(EPlayer player)
+        {
+            if (player == EPlayer.PlayerA)
+            {
+                return _playerAShipsLeft;
+            }
+
+            return _playerBShipsLeft;
+        }
+
+        public void usePlayerShips(EPlayer player, string shipName)
+        {
+            if (player == EPlayer.PlayerA)
+            {
+                foreach (ShipConfig ship in _playerAShipsLeft)
+                {
+                    if (ship.Name == shipName && ship.Quantity > 1)
+                    {
+                        ship.Quantity--;
+                    } else if (ship.Name == shipName && ship.Quantity == 1)
+                    {
+                        _playerAShipsLeft.Remove(ship);
+                        return;
+                    }
+                }
+            }
+            if (player == EPlayer.PlayerB)
+            {
+                foreach (ShipConfig ship in _playerBShipsLeft)
+                {
+                    if (ship.Name == shipName && ship.Quantity > 1)
+                    {
+                        ship.Quantity--;
+                    } else if (ship.Name == shipName && ship.Quantity == 1)
+                    {
+                        _playerBShipsLeft.Remove(ship);
+                        return;
+                    }
+                }
+            }
         }
 
         public void PlayerPlacedShips(EPlayer player)
@@ -89,10 +136,10 @@ namespace BattleShipBrain
 
         public EShipTouchRule GetTouchRule()
         {
-            return _gameConfig.EShipTouchRule;
+            return _gameConfig!.EShipTouchRule;
         }
 
-        public GameConfig GetGameConfig()
+        public GameConfig? GetGameConfig()
         {
             return _gameConfig;
         }
@@ -164,13 +211,11 @@ namespace BattleShipBrain
         public bool CheckIfCanPutShip(Ship shipToPut, EPlayer player)
         {
             var currentTouchRule = GetTouchRule();
-            GameConfig config = _gameConfig;
+            GameConfig? config = _gameConfig;
             var integerForBoards = 0;
             if (player is EPlayer.PlayerB) integerForBoards = 2;
-            if (_gameBoards[integerForBoards].Ships is null) return true;
             switch (currentTouchRule)
             {
-            
                 case EShipTouchRule.NoTouch:
                     foreach (var coordinate in shipToPut.GetCords())
                         for (var y = -1; y < 2; y++)
@@ -179,7 +224,7 @@ namespace BattleShipBrain
                             var xForPlacing = x;
                             var yForPlacing = y;
 
-                            if (coordinate.X > config.BoardSizeX - 1 ||
+                            if (coordinate.X > config!.BoardSizeX - 1 ||
                                 coordinate.Y > config.BoardSizeY - 1) return false;
 
                             if (config.BoardSizeX - 1 - coordinate.X == 0 && xForPlacing > 0) xForPlacing = 0;
@@ -203,7 +248,7 @@ namespace BattleShipBrain
                             var xForPlacing = x;
                             var yForPlacing = y;
 
-                            if (coordinate.X > config.BoardSizeX - 1 ||
+                            if (coordinate.X > config!.BoardSizeX - 1 ||
                                 coordinate.Y > config.BoardSizeY - 1) return false;
 
                             if (config.BoardSizeX - 1 - coordinate.X == 0 && xForPlacing > 0) xForPlacing = 0;
@@ -224,15 +269,13 @@ namespace BattleShipBrain
 
                 case EShipTouchRule.SideTouch:
                     foreach (var coordinate in shipToPut.GetCords()!)
-                        for (var y = -1; y < 2; y++)
-                        for (var x = -1; x < 2; x++)
-                        {
-                            if (coordinate.X > config.BoardSizeX - 1 ||
-                                coordinate.Y > config.BoardSizeY - 1) return false;
+                    {
+                        if (coordinate.X > config!.BoardSizeX - 1 ||
+                            coordinate.Y > config.BoardSizeY - 1) return false;
 
-                            if (_gameBoards[integerForBoards].Board[coordinate.X, coordinate.Y].IsShip)
-                                return false;
-                        }
+                        if (_gameBoards[integerForBoards].Board[coordinate.X, coordinate.Y].IsShip)
+                            return false;
+                    }
 
                     // GameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
                     return true;
@@ -263,6 +306,7 @@ namespace BattleShipBrain
                                 _gameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
                         }
 
+                        usePlayerShips(EPlayer.PlayerA, ship.Name);
                         // Ships is placed, returning true 
                         return true;
                     }
@@ -289,6 +333,7 @@ namespace BattleShipBrain
                             // Ships is placed, returning true 
                         }
 
+                        usePlayerShips(EPlayer.PlayerB, ship.Name);
                         return true;
                     }
 
@@ -331,7 +376,7 @@ namespace BattleShipBrain
             return "not found";
         }
 
-        private static string GetFileNameSave(string saveName)
+        public string GetFileNameSave(string saveName)
         {
             DirectoryInfo di = new(@$"{_basePath + Path.DirectorySeparatorChar + "Saves"}");
             FileInfo[] files = di.GetFiles("*.json");
@@ -347,7 +392,9 @@ namespace BattleShipBrain
                 }
             }
 
-            return "not found";
+            return _basePath + Path.DirectorySeparatorChar + "Saves" +
+                   Path.DirectorySeparatorChar +
+                   $"{saveName}.json";;
         }
 
         public void SaveConfigLocal(string? configName, GameConfig config)
@@ -456,10 +503,15 @@ namespace BattleShipBrain
             {
                 WriteIndented = true
             };
-
             var dto = new SaveGameDto();
             dto.SetGameBoards(_gameBoards);
             dto.CurrentPlayer = _currentPlayer;
+            dto.WinnerPlayer = _winnerPlayer;
+            dto.GameConfig = _gameConfig;
+            dto.PlayerAShipDone = _playerAShipDone;
+            dto.PlayerBShipDone = _playerBShipDone;
+            dto.PlayerAShipsLeft = _playerAShipsLeft;
+            dto.PlayerBShipsLeft = _playerBShipsLeft;
             var jsonStr = JsonSerializer.Serialize(dto, jsonOptions);
             return jsonStr;
         }
@@ -498,6 +550,12 @@ namespace BattleShipBrain
             }
 
             _currentPlayer = dto.CurrentPlayer;
+            _winnerPlayer = dto.WinnerPlayer;
+            _gameConfig = dto.GameConfig;
+            _playerAShipDone = dto.PlayerAShipDone;
+            _playerBShipDone = dto.PlayerBShipDone;
+            _playerAShipsLeft = dto.PlayerAShipsLeft!;
+            _playerBShipsLeft = dto.PlayerBShipsLeft!;
         }
     }
 }

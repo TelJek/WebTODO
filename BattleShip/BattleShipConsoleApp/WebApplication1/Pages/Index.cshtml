@@ -1,4 +1,5 @@
 ﻿@page
+@using BattleShipBrain
 @model IndexModel
 @{
     ViewData["Title"] = "Home page";
@@ -8,7 +9,7 @@
     <div class="d-flex flex-column bd-highlight mb-3">
         <div class="p-2 bd-highlight">
             <div class="text-center">
-                @if (Model.PlayerSide == null)
+                @if (Model.ShareCode == null)
                 {
                     <h1 class="display-4">Choose how to Start the Game!</h1>
                 }
@@ -22,7 +23,7 @@
             <div class="d-flex justify-content-center">
                 <div class="d-flex flex-row bd-highlight mb-3">
                     <div class="p-2 bd-highlight">
-                        @if (Model.PlayerSide == null)
+                        @if (Model.ShareCode == null)
                         {
                             <a class="btn btn-primary" asp-area="" asp-page="/LoadData/LoadDb" role="button">Start Game from Existing Save in Database</a>
                         }
@@ -32,13 +33,9 @@
                         }
                     </div>
                     <div class="p-2 bd-highlight">
-                        @if (Model.Brain == null)
+                        @if (Model.Brain != null)
                         {
-                            <a class="btn btn-primary" href="#" role="button">Start Game from Existing Save file</a>
-                        }
-                        else
-                        {
-                            if (!Model.Brain.CheckPlayerPlacedShips(Model.Player))
+                            if (!Model.Brain!.CheckPlayerPlacedShips(Model.Player))
                             {
                                 <a class="btn btn-primary" asp-page="/Game/Ships" role="button">Put my Ships!</a>
                             }
@@ -60,21 +57,32 @@
             <div class="d-flex justify-content-center">
                 <div class="d-flex flex-row bd-highlight mb-3">
                     <div class="p-2 bd-highlight">
-                        @if (Model.PlayerSide == null)
+                        @if (Model.ShareCode == null)
                         {
                             <a class="btn btn-primary" asp-area="" asp-page="/NewGame/NewConfig" role="button">Start Game from a Scratch!</a>
                         }
                         else
                         {
-                            if (Model.CurrentPlayer.Equals(Model.PlayerSideToOutput))
+                            @if (Model.CurrentPlayer.Equals(Model.PlayerSideToOutput) && Model.Brain!.CheckPlayerPlacedShips(EPlayer.PlayerA) && Model.Brain!.CheckPlayerPlacedShips(EPlayer.PlayerB))
                             {
                                 <a class="btn btn-primary" asp-area="" asp-page="/Game/Mines" role="button">Put a Bomb!</a>
+                            }
+                            else if (Model.PlayerWinnerToOutput is "Player A" or "Player B")
+                            {
+                                <a class="btn btn-primary disabled" asp-area="" asp-page="" role="button">Put a Bomb!</a>
+                                <div class="d-flex justify-content-center">
+                                    <div id="passwordHelpBlock" class="form-text">
+                                        The war is over!
+                                    </div>
+                                </div>
                             }
                             else
                             {
                                 <a class="btn btn-primary disabled" asp-area="" asp-page="" role="button">Put a Bomb!</a>
-                                <div id="passwordHelpBlock" class="form-text">
-                                    It is not your turn!
+                                <div class="d-flex justify-content-center">
+                                    <div id="passwordHelpBlock" class="form-text">
+                                        It is not your turn!
+                                    </div>
                                 </div>
                             }
                         }
@@ -82,20 +90,36 @@
                 </div>
             </div>
         </div>
-        @if (Model.PlayerSide != null && Model.ListOfConfigs != null)
+        <div class="p-2 bd-highlight">
+            <div class="d-flex justify-content-center">
+                <div class="d-flex flex-row bd-highlight mb-3">
+                    <div class="p-2 bd-highlight">
+                        @if (Model.ShareCode == null)
+                        {
+                            <a class="btn btn-primary" asp-area="" asp-page="/LoadData/LoadCode" role="button">Join game with code!</a>
+                        }
+                        else
+                        {
+                            <button class="btn btn-primary" asp-area="" onclick="window.location.href='?newGame=yes'" role="button">New game!</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        @if (Model.PlayerSide != null && Model.Game != null)
         {
             <div class="p-2 bd-highlight">
                 <div class="d-flex justify-content-center">
                     <div class="d-flex flex-row bd-highlight mb-3">
                         <div class="p-2 bd-highlight">
                             <div class="form-floating">
-                                <input class="form-control" id="textForConfigName" name="textForConfigName" placeholder="Configuration" value="@Model.ListOfConfigs[0].ConfigName" disabled readonly/>
+                                <input class="form-control" id="textForConfigName" name="textForConfigName" placeholder="Configuration" value="@Model.Game[0].ConfigName" disabled readonly/>
                                 <label for="textForConfigName">Configuration</label>
                             </div>
                         </div>
                         <div class="p-2 bd-highlight">
                             <div class="form-floating">
-                                <input class="form-control" id="textForSaveName" name="textForSaveName" placeholder="Save" value="@Model.ListOfSaves?[0].SaveName" disabled readonly/>
+                                <input class="form-control" id="textForSaveName" name="textForSaveName" placeholder="Save" value="@Model.Game[0].SaveName" disabled readonly/>
                                 <label for="textForSaveName">Save</label>
                             </div>
                         </div>
@@ -115,6 +139,12 @@
                             <div class="form-floating">
                                 <input class="form-control" id="textForGameWinner" name="textForGameWinner" placeholder="Winner" value="@Model.PlayerWinnerToOutput" disabled readonly/>
                                 <label for="textForGameWinner">Winner</label>
+                            </div>
+                        </div>
+                        <div class="p-2 bd-highlight">
+                            <div class="form-floating">
+                                <input class="form-control" id="textForShareCode" name="textForShareCode" placeholder="ShareCode" value="@Model.ShareCode" disabled readonly/>
+                                <label for="textForGameWinner">Share code</label>
                             </div>
                         </div>
                     </div>

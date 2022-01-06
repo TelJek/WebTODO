@@ -50,6 +50,27 @@ public class AccessData
         return listOfSaves;
     }
 
+    public static List<StartedGame> GetAllGamesFromDb(string? shareCode)
+    {
+        List<StartedGame>? listOfGames = new List<StartedGame>();
+        var db = new ApplicationDbContext();
+        if (shareCode == null)
+        {
+            foreach (var dbSave in db.StartedGames) listOfGames.Add(dbSave);
+        }
+        else
+        {
+            foreach (var dbSaveById in db.StartedGames)
+            {
+                if (dbSaveById.ConnectCode == int.Parse(shareCode))
+                {
+                    listOfGames.Add(dbSaveById);
+                }
+            }
+        }
+        return listOfGames;
+    }
+    
     public static void SaveConfigInDb(string configName, int boardSizeX, int boardSizeY, EShipTouchRule newTouchRule,
         List<ShipConfig> shipsConfig)
     {
@@ -71,29 +92,55 @@ public class AccessData
     {
         using var db = new ApplicationDbContext();
 
-        var configToSave = RestoreConfigFromJson(configId);
+        var configToSave = RestoreConfigFromJsonById(configId);
 
         var brain = new BsBrain(configToSave, null);
         var gameStateSave = new GameStateSaved
         {
             SaveName = saveName,
-            SavedGameStateJsnString = brain?.GetBrainJson()!
+            GameStateConfigId = int.Parse(configId),
+            SavedGameStateJsnString = brain.GetBrainJson()
         };
         db.GameStateSaves.Add(gameStateSave);
         db.SaveChanges();
     }
-    
-    public static void UpdateSave(BsBrain brainOld, int saveId, string? configId)
+
+    public static void CreateNewGame(string saveId, string? configId, int shareCode)
     {
         using var db = new ApplicationDbContext();
 
-        var configToSave = RestoreConfigFromJson(configId);
+        var config = GetConfigsFromDb(configId)[0];
+        var save = GetSavesFromDb(saveId)[0];
 
-        var brain = brainOld;
-        var result = db.GameStateSaves.SingleOrDefault(s => s.GameStateSavedId == saveId);
-        if (result != null)
+        var startedGame = new StartedGame()
         {
-            result.SavedGameStateJsnString = brain.GetBrainJson();
+            ConfigName = config.ConfigName,
+            GameConfigSavedId = config.GameConfigSavedId,
+            ConnectCode = shareCode,
+            GameConfigJsnString = config.GameConfigJsnString,
+            GameStateConfigId = save.GameStateConfigId,
+            GameStateSavedId = save.GameStateSavedId,
+            SavedGameStateJsnString = save.SavedGameStateJsnString,
+            SaveName = save.SaveName
+        };
+
+        db.StartedGames.Add(startedGame);
+        db.SaveChanges();
+    }
+    
+    public static void UpdateSave(BsBrain brainOld, int shareCode)
+    {
+        using var db = new ApplicationDbContext();
+        var brain = brainOld;
+        var shareCodeGame = db.StartedGames.SingleOrDefault(s => s.ConnectCode == shareCode);
+        if (shareCodeGame != null)
+        {
+            shareCodeGame.SavedGameStateJsnString = brain.GetBrainJson();
+            var saveData = db.GameStateSaves.SingleOrDefault(s => s.GameStateSavedId == shareCodeGame!.GameStateSavedId);
+            if (saveData != null)
+            {
+                saveData.SavedGameStateJsnString = shareCodeGame.SavedGameStateJsnString;
+            }
             db.SaveChanges();
         }
     }
@@ -110,9 +157,23 @@ public class AccessData
         return confJsonStr;
     }
 
-    public static GameConfig RestoreConfigFromJson(string? configId)
+    public static GameConfig? RestoreConfigFromJson(string? configJsonString)
     {
-        GameConfig config = new();
+        GameConfig? config = new();
+
+        using var db = new ApplicationDbContext();
+        // var confText =
+        //     db.GameConfigSaves.FirstOrDefault(c => c!.GameConfigSavedId == int.Parse(configId));
+        if (configJsonString != null)
+            config = JsonSerializer.Deserialize<GameConfig>(configJsonString) ??
+                     throw new InvalidOperationException();
+
+        return config;
+    }
+    
+    public static GameConfig? RestoreConfigFromJsonById(string? configId)
+    {
+        GameConfig? config = new();
 
         using var db = new ApplicationDbContext();
         var confText =
@@ -124,10 +185,10 @@ public class AccessData
         return config;
     }
     
-    public static BsBrain? RestoreSaveFromJson(string? configId, string? saveId)
+    public static BsBrain? RestoreSaveFromJson(string gameStateJsonString, string gameConfigJsonString)
     {
-        var saveGameDto = JsonSerializer.Deserialize<SaveGameDto>(GetSavesFromDb(saveId)![0].SavedGameStateJsnString) ?? throw new InvalidOperationException();
-        BsBrain? brain = new BsBrain(RestoreConfigFromJson(configId), null);
+        var saveGameDto = JsonSerializer.Deserialize<SaveGameDto>(gameStateJsonString) ?? throw new InvalidOperationException();
+        BsBrain brain = new BsBrain(RestoreConfigFromJson(gameConfigJsonString), null);
         brain.LoadNewGameDto(saveGameDto);
         return brain;
     }

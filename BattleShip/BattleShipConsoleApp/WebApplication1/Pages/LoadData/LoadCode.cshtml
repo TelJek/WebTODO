@@ -1,0 +1,47 @@
+﻿@page
+@model WebApplication1.Pages.LoadData.LoadCode
+
+
+@{
+    ViewData["Title"] = "Connect";
+    Layout = "~/Pages/Shared/_Layout.cshtml";
+}
+
+<div class="d-flex justify-content-center">
+    <div class="d-flex flex-column bd-highlight mb-3">
+        <div class="p-2 bd-highlight">
+            <div class="text-center">
+                <h1 class="display-10">Select Save!</h1>
+            </div>
+        </div>
+        <div class="p-2 bd-highlight">
+            <div class="d-flex justify-content-center">
+                <div class="d-flex flex-row bd-highlight mb-3">
+                    <form method="post">
+                        <div class="d-flex justify-content-center">
+                            <div class="d-flex flex-row bd-highlight">
+                                <div class="p-3 bd-highlight row-cols-lg-auto">
+                                    <div class="text-center">
+                                        <h5 class="display-10">Connect to the game by Share Code!</h5>
+                                    </div>
+                                    <div class="form-floating">
+                                        <input class="form-control" id="inputShareCode" name="inputShareCode" placeholder="Save name"/>
+                                        <label for="inputShareCode">Share Code</label>
+                                    </div>
+                                    <div class="form-floating">
+                                        <select class="form-select" id="inputPlayerSide" name="inputPlayerSide" aria-label="Choose a Side">
+                                            <option value="playerSideA">Player A</option>
+                                            <option value="playerSideB">Player B</option>
+                                        </select>
+                                        <label for="inputPlayerSide" asp-for="PlayerSide">Choose a Side</label>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary">Start Game from Existing Save in Database</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

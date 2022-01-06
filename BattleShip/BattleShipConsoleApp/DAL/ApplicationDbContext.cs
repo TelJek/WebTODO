@@ -18,6 +18,8 @@ namespace DAL
     public DbSet<GameConfigSaved?> GameConfigSaves { get; set; } = default!;
     public DbSet<GameStateSaved> GameStateSaves { get; set; } = default!;
 
+    public DbSet<StartedGame> StartedGames { get; set; } = default!;
+
     // not recommended - do not hardcode DB conf!
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

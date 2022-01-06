@@ -4,7 +4,7 @@
 @model WebApplication1.Pages.LoadData.LoadSave
 
 @{
-    ViewData["Title"] = "LoadSave";
+    ViewData["Title"] = "Load Save";
     Layout = "~/Pages/Shared/_Layout.cshtml";
 }
 
@@ -26,14 +26,16 @@
                                         <select class="form-select" id="inputDbConfigId" asp-for="SaveId">
                                             @foreach (var item in AccessData.GetSavesFromDb(null)!)
                                             {
-                                                <option value="@item.GameStateSavedId">@Html.DisplayFor(modelItem => item.SaveName)</option>
+                                                if (item.GameStateConfigId == int.Parse(Request.Cookies["ConfigId"]!))
+                                                {
+                                                    <option value="@item.GameStateSavedId">@Html.DisplayFor(modelItem => item.SaveName)</option>
+                                                }
                                             }
                                         </select>
                                         <label for="inputDbConfigId" asp-for="SaveId">Choose a Save to load!</label>
                                     </div>
                                     <div class="form-floating">
                                         <select class="form-select" id="inputPlayerSide" asp-for="PlayerSide" aria-label="Choose a Side">
-                                            <option selected>Please choose a side to play!</option>
                                             <option value="playerSideA">Player A</option>
                                             <option value="playerSideB">Player B</option>
                                         </select>

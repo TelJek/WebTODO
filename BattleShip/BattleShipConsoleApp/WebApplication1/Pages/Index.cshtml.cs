@@ -17,25 +17,40 @@ public class IndexModel : PageModel
 
     public string? PlayerSide { get; set; }
     public static string? LoadedConfigId { get; set; }
-    public static string? LoadedSaveId { get; set; }
-    public List<GameConfigSaved>? ListOfConfigs { get; set; }
-    public List<GameStateSaved>? ListOfSaves { get; set; }
+    public string? LoadedSaveId { get; set; }
+    public string? ShareCode { get; set; }
+    public List<StartedGame>? Game { get; set; }
+    // public List<GameConfigSaved>? ListOfConfigs { get; set; }
+    // public List<GameStateSaved>? ListOfSaves { get; set; }
     public BsBrain? Brain { get; set; }
     public EPlayer Player { get; set; } = EPlayer.NotDefined;
     public string CurrentPlayer { get; set; } = "NotDefined!";
     public string PlayerSideToOutput { get; set; } = "NotDefined!";
     public string PlayerWinnerToOutput { get; set; } = "NotDefined!";
     
-    public async Task<IActionResult> OnGet()
+    public async Task<IActionResult> OnGet(string? newGame)
     {
         PlayerSide = HttpContext.Request.Cookies["PlayerSide"];
+        if (newGame is "yes")
+        {
+            PlayerSide = null;
+            Response.Cookies.Delete("PlayerSide");
+            Response.Cookies.Delete("SaveId");
+            Response.Cookies.Delete("ConfigId");
+            Response.Cookies.Delete("ShareCode");
+            Response.Cookies.Delete("ShipToUseInfo");
+            return RedirectToPage("/Index");
+        }
         LoadedConfigId = HttpContext.Request.Cookies["ConfigId"];
         LoadedSaveId = HttpContext.Request.Cookies["SaveId"];
-        if (PlayerSide != null && LoadedConfigId != null && LoadedSaveId != null)
+        ShareCode = HttpContext.Request.Cookies["ShareCode"];
+        if (ShareCode != null)
         {
-            ListOfConfigs = AccessData.GetConfigsFromDb(LoadedConfigId);
-            ListOfSaves = AccessData.GetSavesFromDb(LoadedSaveId);
-            Brain = AccessData.RestoreSaveFromJson(LoadedConfigId, LoadedSaveId);
+            Game = AccessData.GetAllGamesFromDb(ShareCode);
+            Brain = AccessData.RestoreSaveFromJson(Game[0].SavedGameStateJsnString, Game[0].GameConfigJsnString);
+            
+            // ListOfConfigs = AccessData.GetConfigsFromDb(LoadedConfigId);
+            // ListOfSaves = AccessData.GetSavesFromDb(LoadedSaveId);
         
             if (Brain!.GetPlayer() == EPlayer.PlayerA) CurrentPlayer = "Player A";
             if (Brain.GetPlayer() == EPlayer.PlayerB) CurrentPlayer = "Player B";

@@ -52,26 +52,27 @@ namespace BattleShipConsoleApp
             if (configDataTypeStr == "DB") configDataLocationType = EDataLocationType.DataBase;
             if (configDataTypeStr == "LOCAL") configDataLocationType = EDataLocationType.Local;
             StartProgram(inputDataStr!, configDataLocationType);
-            
         }
 
         private static string GetFileNameConfig(string configName)
         {
             DirectoryInfo di = new(@$"{_basePath + Path.DirectorySeparatorChar + "Configs"}");
             FileInfo[] files = di.GetFiles("*.json");
+            var fileNameConfig = "Not Found!";
 
             foreach (FileInfo file in files)
             {
                 if (file.Name.Split(".")[0].ToUpper() == configName.ToUpper())
                 {
- 
-                    var fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Configs" + Path.DirectorySeparatorChar +
-                                         $"{configName}.json";
+                    fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Configs" + Path.DirectorySeparatorChar +
+                                     $"{configName}.json";
                     return fileNameConfig;
                 }
             }
 
-            return "not found";
+            fileNameConfig = _basePath + Path.DirectorySeparatorChar + "Configs" + Path.DirectorySeparatorChar +
+                             $"{configName}.json";
+            return fileNameConfig;
         }
 
         private static string GetConfJsonStr(GameConfig config)
@@ -102,24 +103,35 @@ namespace BattleShipConsoleApp
 
         private static GameConfig LoadNewConfig(string configName, EDataLocationType loadFromDataLocationType)
         {
-            GameConfig config = new();
+            GameConfig? config = new();
             var fileNameStandardConfig = GetFileNameConfig(configName);
             if (loadFromDataLocationType is EDataLocationType.Local)
+            {
                 if (File.Exists(fileNameStandardConfig))
                 {
                     Console.WriteLine("Loading config...");
+                    _loadedGameConfigName = fileNameStandardConfig;
                     var confText = File.ReadAllText(fileNameStandardConfig);
                     config = JsonSerializer.Deserialize<GameConfig>(confText) ?? throw new InvalidOperationException();
                 }
-
+            }
             if (loadFromDataLocationType is EDataLocationType.DataBase)
             {
-
+                using var db = new ApplicationDbContext();
+                foreach (var dbConfig in db.GameConfigSaves)
+                {
+                    if (string.Equals(dbConfig!.ConfigName, configName, StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        _loadedGameConfigName = dbConfig.ConfigName;
+                        config = JsonSerializer.Deserialize<GameConfig>(dbConfig.GameConfigJsnString) ?? throw new InvalidOperationException();
+                    }
+                }
             }
 
+            
             return config;
         }
-        
+
         private static void StartProgram(string config, EDataLocationType locationType)
         {
             BsBrain brain = new(LoadNewConfig(config, locationType), _basePath!);
@@ -129,5 +141,3 @@ namespace BattleShipConsoleApp
         }
     }
 }
-
-    

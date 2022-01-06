@@ -18,27 +18,40 @@
             </div>
             <div class="">
                 <table>
-                    @for (int y = 0; y < Model.Brain!.GetBoard(0).GetLength(1); y++)
+                    <tr>
+                        <td class="table-td" onclick="" bgcolor="white" style="height: 32px; width: 32px; border: 2px solid #000;">
+                        </td>
+                        @for (int y = 0; y < Model.Brain!.GetBoard(Model.IndexForBoards[0]).GetLength(1); y++)
+                        {
+                            <td class="table-td" onclick="" bgcolor="white" style="height: 32px; width: 32px; border: 2px solid #000; text-align: center; vertical-align: middle">
+                                <strong>@(y + 1)</strong>
+                            </td>
+                        }
+                    </tr>
+                    @for (int y = 0; y < Model.Brain!.GetBoard(Model.IndexForBoards[0]).GetLength(1); y++)
                     {
                         <tr>
-                            @for (int x = 0; x < Model.Brain.GetBoard(0).GetLength(0); x++)
+                            <td class="table-td" onclick="" bgcolor="white" style="height: 32px; width: 32px; border: 2px solid #000;text-align: center; vertical-align: middle">
+                                <strong>@(y + 1)</strong>
+                            </td>
+                            @for (int x = 0; x < Model.Brain.GetBoard(Model.IndexForBoards[0]).GetLength(0); x++)
                             {
-                                if (Model.Brain.GetBoard(0)[x, y].ToString().Equals("|-E-|"))
+                                if (Model.Brain.GetBoard(Model.IndexForBoards[0])[x, y].ToString().Equals("|-E-|"))
                                 {
                                     <td class="table-td" onclick="" bgcolor="#00bfff" style="height: 32px; width: 32px; border: 2px solid #000;">
                                     </td>
                                 }
-                                else if (Model.Brain.GetBoard(0)[x, y].ToString().Equals("|-S-|"))
-                                {
-                                    <td class="table-td" onclick="" bgcolor="#a52a2a" style="height: 32px; width: 32px; border: 2px solid #000;">
-                                    </td>
-                                }
-                                else if (Model.Brain.GetBoard(0)[x, y].ToString().Equals("|-B-|"))
+                                else if (Model.Brain.GetBoard(Model.IndexForBoards[0])[x, y].ToString().Equals("|-S-|"))
                                 {
                                     <td class="table-td" onclick="" bgcolor="#000000" style="height: 32px; width: 32px; border: 2px solid #000;">
                                     </td>
                                 }
-                                else if (Model.Brain.GetBoard(0)[x, y].ToString().Equals("|-H-|"))
+                                else if (Model.Brain.GetBoard(Model.IndexForBoards[0])[x, y].ToString().Equals("|-B-|"))
+                                {
+                                    <td class="table-td" onclick="" bgcolor="#a52a2a" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                    </td>
+                                }
+                                else if (Model.Brain.GetBoard(Model.IndexForBoards[0])[x, y].ToString().Equals("|-H-|"))
                                 {
                                     <td class="table-td" onclick="" bgcolor="#ff0000" style="height: 32px; width: 32px; border: 2px solid #000;">
                                     </td>
@@ -55,22 +68,40 @@
             </div>
             <div class="">
                 <table>
-                    @for (int y = 0; y < Model.Brain.GetBoard(0).GetLength(1); y++)
+                    <tr>
+                        <td class="table-td" onclick="" bgcolor="white" style="height: 32px; width: 32px; border: 2px solid #000;">
+                        </td>
+                        @for (int y = 0; y < Model.Brain!.GetBoard(Model.IndexForBoards[1]).GetLength(1); y++)
+                        {
+                            <td class="table-td" onclick="" bgcolor="white" style="height: 32px; width: 32px; border: 2px solid #000; text-align: center; vertical-align: middle">
+                                <strong>@(y + 1)</strong>
+                            </td>
+                        }
+                    </tr>
+                    @for (int y = 0; y < Model.Brain.GetBoard(Model.IndexForBoards[1]).GetLength(1); y++)
                     {
                         <tr>
-                            @for (int x = 0; x < Model.Brain.GetBoard(0).GetLength(0); x++)
+                            <td class="table-td" onclick="" bgcolor="white" style="height: 32px; width: 32px; border: 2px solid #000;text-align: center; vertical-align: middle">
+                                <strong>@(y + 1)</strong>
+                            </td>
+                            @for (int x = 0; x < Model.Brain.GetBoard(Model.IndexForBoards[1]).GetLength(0); x++)
                             {
-                                if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-E-|") || Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-S-|"))
+                                if (Model.Brain.GetBoard(Model.IndexForBoards[1])[x, y].ToString().Equals("|-E-|"))
                                 {
                                     <td class="table-td" onclick="window.location.href='?moveType=mine&x=@(x)&y=@(y)'" bgcolor="#00bfff" style="height: 32px; width: 32px; border: 2px solid #000;">
                                     </td>
                                 }
-                                else if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-B-|"))
+                                else if (Model.Brain.GetBoard(Model.IndexForBoards[1])[x, y].ToString().Equals("|-S-|"))
+                                {
+                                    <td class="table-td" onclick="window.location.href='?moveType=mine&x=@(x)&y=@(y)'" bgcolor="#00bfff" style="height: 32px; width: 32px; border: 2px solid #000;">
+                                    </td>
+                                }
+                                else if (Model.Brain.GetBoard(Model.IndexForBoards[1])[x, y].ToString().Equals("|-B-|"))
                                 {
                                     <td class="table-td" onclick="" bgcolor="#a52a2a" style="height: 32px; width: 32px; border: 2px solid #000;">
                                     </td>
                                 }
-                                else if (Model.Brain.GetBoard(1)[x, y].ToString().Equals("|-H-|"))
+                                else if (Model.Brain.GetBoard(Model.IndexForBoards[1])[x, y].ToString().Equals("|-H-|"))
                                 {
                                     <td class="table-td" onclick="" bgcolor="#ff0000" style="height: 32px; width: 32px; border: 2px solid #000;">
                                     </td>
