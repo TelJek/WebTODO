@@ -67,7 +67,7 @@ public class NewConfig : PageModel
 
             AccessData.SaveConfigInDb(inputConfigName, int.Parse(inputBoardSizeX), int.Parse(inputBoardSizeY),
                 tempTouchRule, shipsConfig);
-            return RedirectToPage("/Index", null);
+            return RedirectToPage("/LoadData/LoadDb", null);
         }
 
         Dictionary<string, string> tempConfig =

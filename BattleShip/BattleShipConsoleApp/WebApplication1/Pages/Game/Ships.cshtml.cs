@@ -21,9 +21,9 @@ public class Ships : PageModel
     public BsBrain? Brain { get; set; }
     public List<StartedGame>? Game { get; set; }
     public string? ShareCode { get; set; }
-
-    public bool ShipsDetect { get; set; } = false;
-
+    
+    public List<int> IndexForBoards { get; set; } = new() {0,2};
+    
     public void OnGet(string? moveType, int? x, int? y)
     {
         // LoadedConfigId = HttpContext.Request.Cookies["ConfigId"];
@@ -34,6 +34,7 @@ public class Ships : PageModel
         ShareCode = HttpContext.Request.Cookies["ShareCode"];
         Game = AccessData.GetAllGamesFromDb(ShareCode);
         Brain = AccessData.RestoreSaveFromJson(Game[0].SavedGameStateJsnString, Game[0].GameConfigJsnString);
+        if (PlayerSide!.Equals("playerSideB")) IndexForBoards = new List<int>() {2,0};
         if (ShipToUseInfo == null)
         {
             ShipToUseInfo = ShipToUseFromCookie;

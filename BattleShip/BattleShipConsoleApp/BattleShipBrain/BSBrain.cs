@@ -273,63 +273,66 @@ public class BsBrain
         return false;
     }
 
-    public bool PutShip(EPlayer player, Ship ship)
-    {
-        switch (player)
+        public bool PutShip(EPlayer player, Ship ship)
         {
-            case EPlayer.PlayerA:
-                if (CheckIfCanPutShip(ship, player))
-                {
-                    if (_gameBoards[0].Ships.Count < 1)
+            switch (player)
+            {
+                case EPlayer.PlayerA:
+                    if (CheckIfCanPutShip(ship, player))
                     {
-                        var shipsA = new List<Ship> {ship};
-                        _gameBoards[0].Ships = shipsA;
-                        foreach (var coordinate in ship.GetCords())
-                            _gameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
-                    }
-                    else
-                    {
-                        _gameBoards[0].Ships.Add(ship);
-                        foreach (var coordinate in ship.GetCords())
-                            _gameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
-                    }
+                        if (_gameBoards[0].Ships is null)
+                        {
+                            List<Ship> shipsA = new List<Ship>();
+                            shipsA.Add(ship);
+                            _gameBoards[0].Ships = shipsA;
+                            foreach (var coordinate in ship.GetCords())
+                                _gameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                        }
+                        else
+                        {
+                            _gameBoards[0].Ships.Add(ship);
+                            foreach (var coordinate in ship.GetCords()!)
+                                _gameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                        }
 
-                    UsePlayerShips(EPlayer.PlayerA, ship.Name);
-                    // Ships is placed, returning true 
-                    return true;
-                }
-
-                // Ships is not placed, returning false, did not get True in CheckIfCanPutShip
-                return false;
-
-            case EPlayer.PlayerB:
-                if (CheckIfCanPutShip(ship, player))
-                {
-                    if (_gameBoards[2].Ships.Count < 1)
-                    {
-                        var shipsB = new List<Ship> {ship};
-                        _gameBoards[2].Ships = shipsB;
-                        foreach (var coordinate in ship.GetCords())
-                            _gameBoards[2].Board[coordinate.X, coordinate.Y].IsShip = true;
-                    }
-                    else
-                    {
-                        _gameBoards[0].Ships.Add(ship);
-                        foreach (var coordinate in ship.GetCords())
-                            _gameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                        UsePlayerShips(EPlayer.PlayerA, ship.Name);
                         // Ships is placed, returning true 
+                        return true;
                     }
 
-                    UsePlayerShips(EPlayer.PlayerB, ship.Name);
-                    return true;
-                }
+                    // Ships is not placed, returning false, did not get True in CheckIfCanPutShip
+                    return false;
 
-                // Ships is not placed, returning false, did not get True in CheckIfCanPutShip
-                return false;
+                case EPlayer.PlayerB:
+                    if (CheckIfCanPutShip(ship, player))
+                    {
+                        if (_gameBoards[2].Ships is null)
+                        {
+                            List<Ship> shipsB = new List<Ship>();
+                            shipsB.Add(ship);
+                            _gameBoards[2].Ships = shipsB;
+                            foreach (var coordinate in ship.GetCords()!)
+                                _gameBoards[2].Board[coordinate.X, coordinate.Y].IsShip = true;
+                        }
+                        else
+                        {
+                            _gameBoards[0].Ships.Add(ship);
+                            foreach (var coordinate in ship.GetCords()!)
+                                _gameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                            // Ships is placed, returning true 
+                        }
+
+                        UsePlayerShips(EPlayer.PlayerB, ship.Name);
+                        return true;
+                    }
+
+                    // Ships is not placed, returning false, did not get True in CheckIfCanPutShip
+                    return false;
+            }
+
+            return false;
         }
 
-        return false;
-    }
 
     public string GetConfJsonStr(GameConfig config)
     {

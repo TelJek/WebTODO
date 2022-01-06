@@ -63,7 +63,7 @@
                         }
                         else
                         {
-                            @if (Model.CurrentPlayer.Equals(Model.PlayerSideToOutput) && Model.Brain!.CheckPlayerPlacedShips(EPlayer.PlayerA) && Model.Brain!.CheckPlayerPlacedShips(EPlayer.PlayerB))
+                            @if (Model.CurrentPlayer.Equals(Model.PlayerSideToOutput) && Model.Brain!.CheckPlayerPlacedShips(EPlayer.PlayerA) && Model.Brain!.CheckPlayerPlacedShips(EPlayer.PlayerB) && Model.Brain!.GetWinner() == EPlayer.NotDefined)
                             {
                                 <a class="btn btn-primary" asp-area="" asp-page="/Game/Mines" role="button">Put a Bomb!</a>
                             }
