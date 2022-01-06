@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using BattleShipBrain;
+using BattleShipBrain.Data;
 using DAL;
 
 
@@ -249,7 +249,7 @@ namespace BattleShipConsoleUI
                 var fileNameSave = brain!.GetFileNameSave(saveName);
                 if (File.Exists(fileNameSave))
                 {
-                    var rewrite = "no";
+                    var rewrite = "";
                     Console.WriteLine($"Save with name: {saveName} already exist!");
                     Console.WriteLine($"Enter yes if you want to rewrite it!");
                     rewrite = Console.ReadLine()?.Trim().ToUpper();
@@ -267,7 +267,7 @@ namespace BattleShipConsoleUI
             if (savingType is "DB" or "BOTH")
             {
                 using var db = new ApplicationDbContext();
-                var gameStateSave = new GameStateSaved();
+                GameStateSaved gameStateSave;
                 foreach (GameStateSaved dbGameStateSave in db.GameStateSaves)
                 {
                     if (dbGameStateSave.SaveName == saveName)
@@ -306,10 +306,10 @@ namespace BattleShipConsoleUI
             var brain = _brain;
             using var db = new ApplicationDbContext();
             DirectoryInfo di =
-                new DirectoryInfo(@$"{brain?.GetBasePath() + System.IO.Path.DirectorySeparatorChar + "Saves"}");
+                new DirectoryInfo(@$"{brain?.GetBasePath() + Path.DirectorySeparatorChar + "Saves"}");
             FileInfo[] files = di.GetFiles("*.json");
             Console.Clear();
-            Console.WriteLine(brain?.GetBasePath() + System.IO.Path.DirectorySeparatorChar + "Saves");
+            Console.WriteLine(brain?.GetBasePath() + Path.DirectorySeparatorChar + "Saves");
             Console.WriteLine("=========| Load Save |=========\n");
             Console.WriteLine("Available: \n");
             Console.WriteLine("=========| Load Local Save |=========");
@@ -332,18 +332,18 @@ namespace BattleShipConsoleUI
             var saveName = Console.ReadLine()?.Trim();
             if (saveType != "" && saveName != "")
             {
-                _saveName = saveName;
+                _saveName = saveName!;
                 if (saveType == "LOCAL") _saveDataLocationType = EDataLocationType.Local;
                 if (saveType == "DB") _saveDataLocationType = EDataLocationType.DataBase;
                 if (_saveDataLocationType is EDataLocationType.Local)
                 {
-                    var saveGameDto = brain?.RestoreBrainFromJson(saveName);
-                    brain?.LoadNewGameDto(saveGameDto);
+                    var saveGameDto = brain?.RestoreBrainFromJson(saveName!);
+                    brain?.LoadNewGameDto(saveGameDto!);
                 }
 
                 if (_saveDataLocationType is EDataLocationType.DataBase)
                 {
-                    var saveText = db.GameStateSaves.FirstOrDefault(s => s.SaveName! == saveName!);
+                    var saveText = db.GameStateSaves.FirstOrDefault(s => s.SaveName == saveName!);
                     if (saveText != null)
                     {
                         var saveGameDto = JsonSerializer.Deserialize<SaveGameDto>(saveText.SavedGameStateJsnString) ?? throw new InvalidOperationException();
@@ -392,10 +392,10 @@ namespace BattleShipConsoleUI
                 switch (player)
                 {
                     case EPlayer.PlayerA:
-                        DrawBoard(brain?.GetBoard(1)!);
+                        DrawBoard(brain.GetBoard(1));
                         break;
                     case EPlayer.PlayerB:
-                        DrawBoard(brain?.GetBoard(3)!);
+                        DrawBoard(brain.GetBoard(3));
                         break;
                 }
                 Console.Write("Choose Y side number: ");
@@ -407,7 +407,7 @@ namespace BattleShipConsoleUI
                 if (player is EPlayer.PlayerA) playerToHit = EPlayer.PlayerB;
                 if (player is EPlayer.PlayerB) playerToHit = EPlayer.PlayerA;
             
-                if (brain!.DidBombHit(xBomb, yBomb, playerToHit))
+                if (brain.DidBombHit(xBomb, yBomb, playerToHit))
                 {
                     Console.WriteLine("Nice hit!\n");
                 }
@@ -416,7 +416,7 @@ namespace BattleShipConsoleUI
                     Console.WriteLine("You miss!\n");
                     brain.ChangePlayerNum();
                 }
-                brain!.PutBomb(xBomb, yBomb, playerToHit);
+                brain.PutBomb(xBomb, yBomb, playerToHit);
             
                 // check if player won
                 if (brain.DidPlayerWon(player))
@@ -450,13 +450,13 @@ namespace BattleShipConsoleUI
             else
             {
                 Console.WriteLine($"=========| {player} Ships |=========");
-                if (player is EPlayer.PlayerA) DrawBoard(brain?.GetBoard(0)!);
-                if (player is EPlayer.PlayerB) DrawBoard(brain?.GetBoard(1)!);
+                if (player is EPlayer.PlayerA) DrawBoard(brain.GetBoard(0));
+                if (player is EPlayer.PlayerB) DrawBoard(brain.GetBoard(1));
                 Console.WriteLine("=============================================");
             
-                if (gameConfig!.ShipConfigs.Count != 0)
+                if (gameConfig.ShipConfigs.Count != 0)
                 {
-                    foreach (var ship in gameConfig!.ShipConfigs)
+                    foreach (var ship in gameConfig.ShipConfigs)
                     {
                         int shipCounter = ship.Quantity;
                         int i = 0;
@@ -471,7 +471,7 @@ namespace BattleShipConsoleUI
                             var cord = new Coordinate();
                             cord.X = xShip;
                             cord.Y = yShip;
-                            if (brain!.PutShip(player, new Ship(ship.Name, cord, ship.ShipSizeX, ship.ShipSizeY)))
+                            if (brain.PutShip(player, new Ship(ship.Name!, cord, ship.ShipSizeX, ship.ShipSizeY)))
                             {
                                 i++;
                                 shipCounter--;
@@ -482,7 +482,7 @@ namespace BattleShipConsoleUI
                             }
                         }
                     }
-                    brain!.PlayerPlacedShips(player);
+                    brain.PlayerPlacedShips(player);
                 }
                 Console.WriteLine("\nYou have placed all ships!\n");
                 Console.WriteLine("=============================================");
@@ -513,7 +513,7 @@ namespace BattleShipConsoleUI
             {
                 case EDataLocationType.Local:
                 {
-                    if (!_brain!.EditConfiguration(configDataLocationType, inputDataConfigOldName, inputDataConfigNewName))
+                    if (!_brain!.EditConfiguration(configDataLocationType, inputDataConfigOldName!, inputDataConfigNewName!))
                     {
                         Console.WriteLine($"Local config with name {inputDataConfigOldName} was not found!");
                     }
@@ -571,7 +571,7 @@ namespace BattleShipConsoleUI
             {
                 case EDataLocationType.Local:
                 {
-                    if (!_brain!.DeleteConfiguration(configDataLocationType, inputConfigNameToDelete))
+                    if (!_brain!.DeleteConfiguration(configDataLocationType, inputConfigNameToDelete!))
                     {
                         Console.WriteLine($"Local config with name {inputConfigNameToDelete} was not found!");
                     }
@@ -582,7 +582,7 @@ namespace BattleShipConsoleUI
                 case EDataLocationType.DataBase:
                 {
                     using var dbContext = new ApplicationDbContext();
-                    if (!dbContext.DeleteFromDbByName(inputConfigNameToDelete, "GameConfigSaves", "ConfigName"))
+                    if (!dbContext.DeleteFromDbByName(inputConfigNameToDelete!, "GameConfigSaves", "ConfigName"))
                     {
                         Console.WriteLine($"DataBase config with name {inputConfigNameToDelete} was not found!");
                     }
@@ -613,7 +613,7 @@ namespace BattleShipConsoleUI
             {
                 case EDataLocationType.Local:
                 {
-                    if (!_brain!.DeleteSave(saveDataLocationType, inputSaveNameToDelete))
+                    if (!_brain!.DeleteSave(saveDataLocationType, inputSaveNameToDelete!))
                     {
                         Console.WriteLine($"Local save with name {inputSaveNameToDelete} was not found!");
                     }
@@ -624,7 +624,7 @@ namespace BattleShipConsoleUI
                 case EDataLocationType.DataBase:
                 {
                     using var dbContext = new ApplicationDbContext();
-                    if (!dbContext.DeleteFromDbByName(inputSaveNameToDelete, "GameStateSaves", "SaveName"))
+                    if (!dbContext.DeleteFromDbByName(inputSaveNameToDelete!, "GameStateSaves", "SaveName"))
                     {
                         Console.WriteLine($"DataBase save with name {inputSaveNameToDelete} was not found!");
                     }
@@ -662,7 +662,7 @@ namespace BattleShipConsoleUI
                 Console.WriteLine();
                 Console.WriteLine("=========| DB Saves |=========");
                 Console.WriteLine();
-                foreach (var dbConfig in db.GameStateSaves) Console.WriteLine(dbConfig!.SaveName); 
+                foreach (var dbConfig in db.GameStateSaves) Console.WriteLine(dbConfig.SaveName); 
             }
 
             db.Dispose();

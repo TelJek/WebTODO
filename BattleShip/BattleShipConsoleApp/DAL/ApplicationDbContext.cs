@@ -1,6 +1,5 @@
-﻿using System;
-using System.Linq;
-using BattleShipBrain;
+﻿using System.Linq;
+using BattleShipBrain.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,7 +14,7 @@ namespace DAL
     private static string ConnectionString =
         "Server=barrel.itcollege.ee;User Id=student;Password=Student.Pass.1;Database=student_arljub_battleship;MultipleActiveResultSets=true";
     
-    public DbSet<GameConfigSaved?> GameConfigSaves { get; set; } = default!;
+    public DbSet<GameConfigSaved> GameConfigSaves { get; set; } = default!;
     public DbSet<GameStateSaved> GameStateSaves { get; set; } = default!;
 
     public DbSet<StartedGame> StartedGames { get; set; } = default!;
@@ -40,14 +39,12 @@ namespace DAL
         }
     }
 
-    public bool DeleteFromDbByName(string NameToDelete, string table, string columnName)
+    public bool DeleteFromDbByName(string nameToDelete, string table, string columnName)
     {
-        var db = this;
-
         using (SqlConnection con = new SqlConnection(ConnectionString))
         {
             con.Open();
-            using (SqlCommand command = new SqlCommand("DELETE FROM " + table + " WHERE " + columnName + " = '" + NameToDelete+"'", con))
+            using (SqlCommand command = new SqlCommand("DELETE FROM " + table + " WHERE " + columnName + " = '" + nameToDelete+"'", con))
             {
                 command.ExecuteNonQuery();
             }

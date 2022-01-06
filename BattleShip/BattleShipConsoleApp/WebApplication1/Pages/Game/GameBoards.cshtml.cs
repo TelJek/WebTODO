@@ -1,4 +1,5 @@
 ﻿using BattleShipBrain;
+using BattleShipBrain.Data;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebApplication1.DAL;
 

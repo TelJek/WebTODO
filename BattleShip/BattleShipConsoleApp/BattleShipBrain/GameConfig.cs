@@ -8,7 +8,7 @@ namespace BattleShipBrain
         public int BoardSizeX { get; set; } = 10;
         public int BoardSizeY { get; set; } = 10;
 
-        public List<ShipConfig> ShipConfigs { get; set; } = new List<ShipConfig>()
+        public List<ShipConfig> ShipConfigs { get; set; } = new()
         {
             new ShipConfig()
             {
@@ -49,7 +49,7 @@ namespace BattleShipBrain
 
         public EShipTouchRule EShipTouchRule { get; set; } = EShipTouchRule.NoTouch;
 
-        public List<ShipConfig> getAllShips()
+        public List<ShipConfig> GetAllShips()
         {
             return ShipConfigs;
         }

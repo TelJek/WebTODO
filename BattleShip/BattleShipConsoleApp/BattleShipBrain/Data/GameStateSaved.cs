@@ -1,12 +1,11 @@
-﻿namespace BattleShipBrain
-{
-    public class GameStateSaved
-    {
-        public int GameStateSavedId { get; set; }
+﻿namespace BattleShipBrain.Data;
 
-        public int GameStateConfigId { get; set; } = default!;
-        public string SaveName { get; set; } = default!;
-        
-        public string SavedGameStateJsnString { get; set; } = default!;
-    }
+public class GameStateSaved
+{
+    public int GameStateSavedId { get; set; }
+
+    public int GameStateConfigId { get; set; }
+    public string SaveName { get; set; } = default!;
+
+    public string SavedGameStateJsnString { get; set; } = default!;
 }

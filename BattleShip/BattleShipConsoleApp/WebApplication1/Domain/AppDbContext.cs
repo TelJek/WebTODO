@@ -1,5 +1,4 @@
-﻿using BattleShipBrain;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace WebApplication1.Domain;
 

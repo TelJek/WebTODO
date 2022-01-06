@@ -1,5 +1,6 @@
 ﻿using System.Transactions;
 using BattleShipBrain;
+using BattleShipBrain.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using WebApplication1.DAL;
@@ -75,7 +76,7 @@ public class Ships : PageModel
 
 
             if (moveType is "ship" && x != null && y != null && ShipToUseFromCookie != null &&
-                Brain!.getPlayerLeftShips(PlayerSideCheck).Count > 0)
+                Brain!.GetPlayerLeftShips(PlayerSideCheck).Count > 0)
             {
                 var tempPlayerSideEnum = EPlayer.NotDefined;
                 if (PlayerSide!.Equals("playerSideA")) tempPlayerSideEnum = EPlayer.PlayerA;
@@ -103,7 +104,7 @@ public class Ships : PageModel
                     Response.Cookies.Append("ShipToUseInfo", activeShip.ToLegacyCookieString());
                 }
             }
-            if (Brain!.getPlayerLeftShips(PlayerSideCheck).Count == 0)
+            if (Brain!.GetPlayerLeftShips(PlayerSideCheck).Count == 0)
             {
                 Brain!.PlayerPlacedShips(PlayerSideCheck);
             }
@@ -141,9 +142,9 @@ public class Ships : PageModel
     public bool CheckIfShipWithNameIsUsed(string? shipName)
     {
         // UsedShipsFromCookie = Request.Cookies["UsedShips"];
-        if (Brain!.getPlayerLeftShips(PlayerSideCheck).Count > 0)
+        if (Brain!.GetPlayerLeftShips(PlayerSideCheck).Count > 0)
         {
-            foreach (ShipConfig playerLeftShip in Brain!.getPlayerLeftShips(PlayerSideCheck))
+            foreach (ShipConfig playerLeftShip in Brain!.GetPlayerLeftShips(PlayerSideCheck))
             {
                 if (playerLeftShip.Name == shipName) return false;
             }

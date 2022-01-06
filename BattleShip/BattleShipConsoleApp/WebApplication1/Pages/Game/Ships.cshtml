@@ -154,7 +154,7 @@
                         </div>
                         <div class="form-floating">
                             <select class="form-select" id="inputShipToUse" asp-for="ShipToUseInfo">
-                                @foreach (ShipConfig shipConfig in Model.Brain.getPlayerLeftShips(Model.PlayerSideCheck))
+                                @foreach (ShipConfig shipConfig in Model.Brain.GetPlayerLeftShips(Model.PlayerSideCheck))
                                 {
                                     <option value="@shipConfig.Name">@shipConfig.Name</option>
                                 }

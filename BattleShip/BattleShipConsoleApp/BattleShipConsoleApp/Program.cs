@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using BattleShipBrain;
 using BattleShipConsoleUI;
@@ -58,7 +57,7 @@ namespace BattleShipConsoleApp
         {
             DirectoryInfo di = new(@$"{_basePath + Path.DirectorySeparatorChar + "Configs"}");
             FileInfo[] files = di.GetFiles("*.json");
-            var fileNameConfig = "Not Found!";
+            string fileNameConfig;
 
             foreach (FileInfo file in files)
             {
@@ -103,7 +102,7 @@ namespace BattleShipConsoleApp
 
         private static GameConfig LoadNewConfig(string configName, EDataLocationType loadFromDataLocationType)
         {
-            GameConfig? config = new();
+            GameConfig config = new();
             var fileNameStandardConfig = GetFileNameConfig(configName);
             if (loadFromDataLocationType is EDataLocationType.Local)
             {
