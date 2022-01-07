@@ -53,7 +53,7 @@ public class NewConfig : PageModel
         }
         if (int.TryParse(inputBoardSizeY, out int numberBoardY))
         {
-            _tempConfig.BoardSizeX = numberBoardY;
+            _tempConfig.BoardSizeY = numberBoardY;
         }
         if (int.TryParse(inputShipQuantity, out int shipQuantity))
         {
