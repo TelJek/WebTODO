@@ -14,6 +14,12 @@
             <div class="text-center">
                 <h1 class="display-10">Select Save!</h1>
             </div>
+            @* @if (Request.Form["error"].Count > 0) *@
+            @* { *@
+            @*     <div class="alert alert-danger" role="alert" style="text-align: center"> *@
+            @*         Please, fill all the fields to continue! *@
+            @*     </div> *@
+            @* } *@
         </div>
         <div class="p-2 bd-highlight">
             <div class="d-flex justify-content-center">
@@ -52,7 +58,7 @@
                                         <label for="inputNewSaveName">Save name</label>
                                     </div>
                                     <div id="passwordHelpBlock" class="form-text">
-                                      After you have created a new save, just select it to load!
+                                        After you have created a new save, just select it to load!
                                     </div>
                                     <div class="d-flex justify-content-center">
                                     </div>

@@ -1,4 +1,5 @@
-﻿using BattleShipBrain;
+﻿using System.Globalization;
+using BattleShipBrain;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Newtonsoft.Json;
@@ -22,7 +23,7 @@ public class NewConfig : PageModel
     public async Task<IActionResult> OnPostAsync()
     {
         TempConfigHolder? _tempConfig = null;
-
+        
         var inputConfigName = Request.Form["inputConfigName"];
         var inputBoardSizeX = Request.Form["inputBoardSizeX"];
         var inputBoardSizeY = Request.Form["inputBoardSizeY"];
@@ -42,14 +43,26 @@ public class NewConfig : PageModel
 
         _tempConfig = new TempConfigHolder()
         {
-            BoardSizeX = int.Parse(inputBoardSizeX), BoardSizeY = int.Parse(inputBoardSizeY),
             EShipTouchRule = tempTouchRule, ShipConfigs = null,
-            ConfigName = inputConfigName, WhereToSave = tempSaveLocation, ShipsToCreate = int.Parse(inputShipQuantity)
+            ConfigName = inputConfigName, WhereToSave = tempSaveLocation
         };
 
+        if (int.TryParse(inputBoardSizeX, out int numberBoardX))
+        {
+            _tempConfig.BoardSizeX = numberBoardX;
+        }
+        if (int.TryParse(inputBoardSizeY, out int numberBoardY))
+        {
+            _tempConfig.BoardSizeX = numberBoardY;
+        }
+        if (int.TryParse(inputShipQuantity, out int shipQuantity))
+        {
+            _tempConfig.ShipsToCreate = shipQuantity;
+        }
+        
         TempConfigHolder = _tempConfig;
 
-        if (Request.Form["inputShipName1"].Count > 0)
+        if (Request.Form["inputShipName1"].Count > 0 && inputConfigName.Count > 0 && inputBoardSizeX.Count > 0 && inputBoardSizeY.Count > 0 && inputShipQuantity.Count > 0)
         {
             var shipsConfig = new List<ShipConfig>();
             var i = 1;
@@ -69,7 +82,9 @@ public class NewConfig : PageModel
                 tempTouchRule, shipsConfig);
             return RedirectToPage("/LoadData/LoadDb", null);
         }
-
+        _tempConfig.Error = "notEnoughInputs";
+        TempConfigHolder = _tempConfig;
+        
         Dictionary<string, string> tempConfig =
             new Dictionary<string, string> {{"passedObject", JsonConvert.SerializeObject(_tempConfig)}};
         return await Task.FromResult<IActionResult>(RedirectToPage("newConfig", tempConfig));

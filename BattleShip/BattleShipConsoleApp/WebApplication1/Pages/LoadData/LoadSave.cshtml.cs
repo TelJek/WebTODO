@@ -50,6 +50,11 @@ public class LoadSave : PageModel
             }
         }
 
+        if (inputSaveName.Count == 0 && inputSaveName[0].Length < 3 && Request.Cookies["SaveId"] is not null)
+        {
+            return RedirectToPage("/LoadSave?error=inputError");
+        }
+        
         return Page();
     }
 }

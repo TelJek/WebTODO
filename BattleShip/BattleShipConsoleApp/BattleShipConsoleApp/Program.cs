@@ -125,6 +125,7 @@ namespace BattleShipConsoleApp
                         _loadedGameConfigName = dbConfig.ConfigName;
                         _loadedGameConfigId = dbConfig.GameConfigSavedId;
                         config = JsonSerializer.Deserialize<GameConfig>(dbConfig.GameConfigJsnString) ?? throw new InvalidOperationException();
+                        return config;
                     }
                 }
             }
@@ -136,6 +137,10 @@ namespace BattleShipConsoleApp
         private static void StartProgram(string config, EDataLocationType locationType)
         {
             BsBrain brain = new(LoadNewConfig(config, locationType), _basePath!);
+            if (_loadedGameConfigName is null || _loadedGameConfigName.Length < 1)
+            {
+                _loadedGameConfigName = "Default";
+            }
             BsConsoleUi console = new(brain, _loadedGameConfigName, locationType, _loadedGameConfigId);
             console.DrawConsoleUi();
             // console.DrawUi("main");

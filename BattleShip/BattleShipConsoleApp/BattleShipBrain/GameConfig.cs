@@ -53,7 +53,6 @@ namespace BattleShipBrain
         {
             return ShipConfigs;
         }
-        
         public override string ToString()
         {
             var jsonOptions = new JsonSerializerOptions()

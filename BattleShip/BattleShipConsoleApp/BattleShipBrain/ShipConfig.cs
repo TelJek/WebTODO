@@ -10,5 +10,4 @@ namespace BattleShipBrain
         public int ShipSizeY { get; set; } 
         public int ShipSizeX { get; set; }
     }
-    
 }

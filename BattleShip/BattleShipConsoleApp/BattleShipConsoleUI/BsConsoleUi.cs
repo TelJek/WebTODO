@@ -283,6 +283,7 @@ namespace BattleShipConsoleUI
                             gameStateSave = new GameStateSaved
                             {
                                 SaveName = saveName,
+                                GameStateConfigId = _configId,
                                 SavedGameStateJsnString = brain?.GetBrainJson()!
                             };
                             db.GameStateSaves.Add(gameStateSave);
@@ -294,6 +295,7 @@ namespace BattleShipConsoleUI
                 gameStateSave = new GameStateSaved
                 {
                     SaveName = saveName,
+                    GameStateConfigId = _configId,
                     SavedGameStateJsnString = brain?.GetBrainJson()!
                 };
                 db.GameStateSaves.Add(gameStateSave);
@@ -461,14 +463,14 @@ namespace BattleShipConsoleUI
             
                 if (gameConfig.ShipConfigs.Count != 0)
                 {
-                    foreach (var ship in gameConfig.ShipConfigs)
+                    foreach (ShipConfig ship in gameConfig.ShipConfigs)
                     {
                         int shipCounter = ship.Quantity;
                         int i = 0;
-                        while (i < ship.Quantity)
+                        while (i < shipCounter)
                         {
                             Console.WriteLine(
-                                $"Ship selected: Name {ship.Name} Quantity {shipCounter} ShipSizeX {ship.ShipSizeX} ShipSizeY {ship.ShipSizeY}");
+                                $"Ship selected: Name {ship.Name} Quantity {shipCounter - i} ShipSizeX {ship.ShipSizeX} ShipSizeY {ship.ShipSizeY}");
                             Console.Write("Choose Y side number: ");
                             var yShip = int.Parse(Console.ReadLine()?.Trim()!);
                             Console.Write("Choose X side number: ");
@@ -479,7 +481,6 @@ namespace BattleShipConsoleUI
                             if (brain.PutShip(player, new Ship(ship.Name!, cord, ship.ShipSizeX, ship.ShipSizeY)))
                             {
                                 i++;
-                                shipCounter--;
                             }
                             else
                             {

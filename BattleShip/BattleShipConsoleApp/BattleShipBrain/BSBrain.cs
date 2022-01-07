@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using BattleShipBrain.Data;
 
@@ -14,17 +15,19 @@ public class BsBrain
 
     private EPlayer _currentPlayer = EPlayer.PlayerA;
     private bool _playerAShipDone;
-    private List<ShipConfig> _playerAShipsLeft;
+    private List<ShipConfig> _playerAShipsLeft = new();
     private bool _playerBShipDone;
-    private List<ShipConfig> _playerBShipsLeft;
+    private List<ShipConfig> _playerBShipsLeft = new();
     private EPlayer _winnerPlayer = EPlayer.NotDefined;
 
     public BsBrain(GameConfig? config, string? basePath)
     {
         _gameConfig = config;
         _basePath = basePath;
-        _playerAShipsLeft = _gameConfig!.ShipConfigs;
-        _playerBShipsLeft = _gameConfig.ShipConfigs;
+        _playerAShipsLeft!.AddRange(_gameConfig!.ShipConfigs.Select(i=> new ShipConfig() {Name = i.Name, Quantity = i.Quantity, ShipSizeX = i.ShipSizeX, ShipSizeY = i.ShipSizeY}));
+        _playerBShipsLeft!.AddRange(_gameConfig!.ShipConfigs.Select(i=> new ShipConfig() {Name = i.Name, Quantity = i.Quantity, ShipSizeX = i.ShipSizeX, ShipSizeY = i.ShipSizeY}));
+        // _playerAShipsLeft = _gameConfig!.ShipConfigs;
+        // _playerBShipsLeft = _gameConfig.ShipConfigs;
         _gameBoards[0] = new GameBoard(EGameBoardType.Ships);
         _gameBoards[1] = new GameBoard(EGameBoardType.Mines);
         _gameBoards[2] = new GameBoard(EGameBoardType.Ships);
@@ -316,9 +319,9 @@ public class BsBrain
                         }
                         else
                         {
-                            _gameBoards[0].Ships.Add(ship);
+                            _gameBoards[2].Ships.Add(ship);
                             foreach (var coordinate in ship.GetCords()!)
-                                _gameBoards[0].Board[coordinate.X, coordinate.Y].IsShip = true;
+                                _gameBoards[2].Board[coordinate.X, coordinate.Y].IsShip = true;
                             // Ships is placed, returning true 
                         }
 
