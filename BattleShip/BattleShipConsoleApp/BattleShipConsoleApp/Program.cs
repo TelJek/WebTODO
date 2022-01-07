@@ -105,6 +105,7 @@ namespace BattleShipConsoleApp
         {
             GameConfig config = new();
             var fileNameStandardConfig = GetFileNameConfig(configName);
+            using var db = new ApplicationDbContext();
             if (loadFromDataLocationType is EDataLocationType.Local)
             {
                 if (File.Exists(fileNameStandardConfig))
@@ -112,12 +113,19 @@ namespace BattleShipConsoleApp
                     Console.WriteLine("Loading config...");
                     _loadedGameConfigName = fileNameStandardConfig;
                     var confText = File.ReadAllText(fileNameStandardConfig);
+                    foreach (var dbConfig in db.GameConfigSaves)
+                    {
+                        if (string.Equals(dbConfig!.ConfigName, configName, StringComparison.CurrentCultureIgnoreCase))
+                        {
+                            _loadedGameConfigName = dbConfig.ConfigName;
+                            _loadedGameConfigId = dbConfig.GameConfigSavedId;
+                        }
+                    }
                     config = JsonSerializer.Deserialize<GameConfig>(confText) ?? throw new InvalidOperationException();
                 }
             }
             if (loadFromDataLocationType is EDataLocationType.DataBase)
             {
-                using var db = new ApplicationDbContext();
                 foreach (var dbConfig in db.GameConfigSaves)
                 {
                     if (string.Equals(dbConfig!.ConfigName, configName, StringComparison.CurrentCultureIgnoreCase))

@@ -364,7 +364,9 @@ public class BsBrain
                 return fileNameConfig;
             }
 
-        return "not found";
+        return _basePath + Path.DirectorySeparatorChar + "Configs" +
+               Path.DirectorySeparatorChar +
+               $"{configName!.ToUpper()}.json";
     }
 
     public string GetFileNameSave(string saveName)
