@@ -230,36 +230,48 @@ else
     </div>
     <div class="p-2 bd-highlight">
         <div class="listOfTodos">
-            @if (Model.TodoDbs != null && Model.TodoDbs.Count > 0)
-            {
-                <div class="p-2 bd-highlight">
-                    <div class="text-center">
-                        <h4 class="display-14">TODO List!</h4>
+
+            <div class="p-2 bd-highlight">
+                <div class="text-center">
+                    <h4 class="display-14">TODO List!</h4>
+                </div>
+            </div>
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md">
+                        <div class="form-floating">
+                            <input type="text" class="form-control" id="inputSearch" name="inputSearch" style="width: 150px">
+                            <label for="inputSearch">Text to search!</label>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="form-floating">
+                            <select class="form-select" id="floatingSelectGrid" aria-label="Floating label select example" name="searchSelect" style="width: 150px">
+                                <option value="searchHeadline">Headline</option>
+                                <option value="searchDescription">Description</option>
+                                <option value="searchCategory">Category</option>
+                                <option value="searchPriority">Priority</option>
+                            </select>
+                            <label for="floatingSelectGrid">Search by</label>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <div class="form-floating">
+                            <select class="form-select" id="floatingSelectGrid" aria-label="Floating label select example" name="sortSelect" style="width: 100px">
+                                <option value="sortPriority">Priority</option>
+                                <option value="sortCreation">Creation date</option>
+                                <option value="sortDueDate">Due date</option>
+                            </select>
+                            <label for="floatingSelectGrid">Sort by</label>
+                        </div>
+                    </div>
+                    <div class="col-md">
+                        <button type="submit" class="btn btn-primary">Apply</button>
                     </div>
                 </div>
-                <form method="get">
-                    <div class="row g-3">
-                        <div class="col-md">
-                            <div class="form-floating">
-                                <input type="text" class="form-control" id="inputSearch" name="inputSearch">
-                                <label for="inputSearch">Search headline</label>
-                            </div>
-                        </div>
-                        <div class="col-md">
-                            <div class="form-floating">
-                                <select class="form-select" id="floatingSelectGrid" aria-label="Floating label select example" name="sortSelect">
-                                    <option value="sortPriority">Priority</option>
-                                    <option value="sortCreation">Creation date</option>
-                                    <option value="sortDueDate">Due date</option>
-                                </select>
-                                <label for="floatingSelectGrid">Sort by</label>
-                            </div>
-                        </div>
-                        <div class="col-md">
-                            <button type="submit" class="btn btn-primary">Apply</button>
-                        </div>
-                    </div>
-                </form>
+            </form>
+            @if (Model.TodoDbs != null && Model.TodoDbs.Count > 0)
+            {
                 foreach (TodoDb todo in Model.TodoDbs)
                 {
                     <div class="d-flex flex-column bd-highlight mb-3">

@@ -12,7 +12,7 @@ public class AccessData
         _context = context;
     }
 
-    public List<TodoDb> SortAllTodos(string? searchString, string? sortSelect, string sessionId)
+    public List<TodoDb> SortAllTodos(string? searchString, string? searchSelect, string? sortSelect, string sessionId)
     {
         List<TodoDb> resultList = new List<TodoDb>();
         List<TodoDb> listToSort = GetAllTodos(sessionId);
@@ -20,13 +20,46 @@ public class AccessData
         {
             foreach (var todoDb in listToSort)
             {
-                if (todoDb.Headline.ToUpper().Contains(searchString.ToUpper()))
+                if (searchSelect == "searchHeadline")
                 {
-                    resultList.Add(todoDb);
+                    if (todoDb.Headline.ToUpper().Contains(searchString.ToUpper()))
+                    {
+                        resultList.Add(todoDb);
+                    }
+                }
+                if (searchSelect == "searchDescription")
+                {
+                    if (todoDb.Description.ToUpper().Contains(searchString.ToUpper()))
+                    {
+                        resultList.Add(todoDb);
+                    }
+                }
+                if (searchSelect == "searchCategory")
+                {
+                    var categoryId = GetAllCategories()
+                        .FindAll(x => x.CategoryName.ToUpper().Contains(searchString.ToUpper()));
+                    foreach (CategoryDb categoryDb in categoryId)
+                    {
+                        if (todoDb.CategoryDbId == categoryDb.Id)
+                        {
+                            resultList.Add(todoDb);
+                        }
+                    }
+                }
+                if (searchSelect == "searchPriority")
+                {
+                    int priorityToSave = 0;
+                    if (searchString is "high" or "1") priorityToSave = 1;
+                    if (searchString is "medium" or "2") priorityToSave = 2;
+                    if (searchString is "low" or "3") priorityToSave = 3;
+                    if (todoDb.Priority == priorityToSave)
+                    {
+                        resultList.Add(todoDb);
+                    }
                 }
             }
         }
-        else if (searchString == null)
+        else if (string.IsNullOrEmpty(searchString))
         {
             resultList = GetAllTodos(sessionId);
         }

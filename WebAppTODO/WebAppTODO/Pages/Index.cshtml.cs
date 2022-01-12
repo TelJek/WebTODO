@@ -12,7 +12,7 @@ public class IndexModel : PageModel
     public string? SessionId { get; set; }
     public List<TodoDb>? TodoDbs { get; set; }
     public List<CategoryDb>? CategoryDbs { get; set; }
-    public bool Errors { get; set; } 
+    public bool Errors { get; set; }
 
     public IndexModel(ILogger<IndexModel> logger, AppDbContext context)
     {
@@ -20,13 +20,14 @@ public class IndexModel : PageModel
         _context = context;
     }
 
-    public void OnGet(string doneSwitch, string deleteSwitch, string inputSearch, string sortSelect, string error)
+    public void OnGet(string doneSwitch, string deleteSwitch, string inputSearch, string sortSelect,
+        string searchSelect, string error)
     {
         if (error != null && error != "")
         {
             Errors = true;
         }
-        
+
         if (doneSwitch != null && doneSwitch != "")
         {
             new AccessData(_context).UpdateTodo(int.Parse(doneSwitch.Split(".")[1]));
@@ -36,20 +37,22 @@ public class IndexModel : PageModel
         {
             new AccessData(_context).DeleteTodo(int.Parse(deleteSwitch.Split(".")[1]));
         }
-        
+
         AccessData accessData = new AccessData(_context);
         if (Request.Cookies["SessionId"] != null)
         {
             SessionId = Request.Cookies["SessionId"];
-            if (inputSearch != null && inputSearch != "" || sortSelect != null && sortSelect != "")
+            if (inputSearch != null && inputSearch != "" || sortSelect != null && searchSelect != "" ||
+                searchSelect != "")
             {
-                TodoDbs = accessData.SortAllTodos(inputSearch, sortSelect, Request.Cookies["SessionId"]!);
+                TodoDbs = accessData.SortAllTodos(inputSearch, searchSelect, sortSelect, Request.Cookies["SessionId"]!);
             }
             else
             {
                 TodoDbs = accessData.GetAllTodos(Request.Cookies["SessionId"]!);
             }
         }
+
         CategoryDbs = accessData.GetAllCategories();
     }
 
@@ -65,12 +68,12 @@ public class IndexModel : PageModel
         var inputCategoryId = Request.Form["inputCategoryId"];
         var inputDueDate = Request.Form["inputDueDate"];
         CookieOptions option = new CookieOptions();
-        
+
         if (inputCode.Count > 0 && inputCode[0].Length > 3)
         {
-           Response.Cookies.Append("SessionId", inputCode, option);
-           Page();
-           return;
+            Response.Cookies.Append("SessionId", inputCode, option);
+            Page();
+            return;
         }
 
         if (inputNewList == "yes")
@@ -82,8 +85,8 @@ public class IndexModel : PageModel
             Page();
             return;
         }
-        
-        
+
+
         if (inputTodoName[0].Length > 0 && inputTodoDescription[0].Length > 0 && inputNewCategory.Count > 0 &&
             inputPriority[0].Length > 0 && inputDueDate[0].Length > 0)
         {
@@ -100,10 +103,8 @@ public class IndexModel : PageModel
         }
         else
         {
-            OnGet("", "", "", "" , "error");
-            return;
+            OnGet("", "", "", "", "","error");
         }
-        OnGet("", "", "", "" , "");
     }
 
     public CategoryDb GetCategoryById(int Id)
