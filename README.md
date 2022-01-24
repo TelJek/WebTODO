@@ -1,6 +1,3 @@
-# cd0008-2021f
+# WebTODO
 
-Programming in C#
-Artjom Ljubozenko
-Arljub
-210740IADB
+Simple WebTodoList on C# and ASP.NET
